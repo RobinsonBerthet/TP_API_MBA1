@@ -17,5 +17,8 @@ Route::get('me', [AuthController::class, 'me']);
 
 Route::get('/emailChecker/{email}', [HackController::class, 'emailChecker']);
 
+Route::post('/spam', [HackController::class, 'envoyerEmail']);
+
+
 
 
