@@ -20,45 +20,70 @@ class HackController extends Controller
         $user = Auth::user();
     
         if (!$user) {
-            // Si l'utilisateur n'est pas authentifié, renvoyer une réponse avec une erreur 401
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
-
-        try{
-
-        } catch (\Exception $e) {
-            // Gérer les erreurs liées à la création du log
-            return response()->json(['error' => 'Erreur lors de l\'enregistrement du log: ' . $e->getMessage()], 500);
-        }
-        $client = new Client();
-        $url = 'https://api.hunter.io/v2/email-verifier?email='.$email.'&api_key=a408bf05f8c0b21d39120be64204a5265b1db4a6';
-
+    
         try {
+            $client = new Client();
+            $url = 'https://api.hunter.io/v2/email-verifier?email=' . $email . '&api_key=a408bf05f8c0b21d39120be64204a5265b1db4a6';
+    
+            // Valider le format de l'email avant d'envoyer la requête
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return response()->json(['error' => 'Adresse email invalide'], 400);
+            }
+    
+            // Envoyer la requête GET à l'API Hunter.io
             $response = $client->request('GET', $url);
-        
+    
+            // Vérifier si la réponse est correcte (statut 200)
+            if ($response->getStatusCode() !== 200) {
+                return response()->json(['error' => 'Erreur de l\'API Hunter: ' . $response->getStatusCode()], 500);
+            }
+    
             // Décoder la réponse JSON
             $data = json_decode($response->getBody(), true);
+    
+            if (isset($data['errors'])) {
+                // Gérer les erreurs spécifiques de l'API Hunter.io
+                return response()->json(['error' => 'Erreur API Hunter: ' . $data['errors'][0]['details']], 400);
+            }
     
             // Extraire les informations nécessaires
             $result = [
                 'email' => $data['data']['email'] ?? null,
-                'score' => $data['data']['score'].'%' ?? null,
+                'score' => isset($data['data']['score']) ? $data['data']['score'] . '%' : null,
                 'status' => $data['data']['status'] ?? null,
             ];
-
-            $log = Log::create([
-                'utilisateur_id' => $user->id,  // ID de l'utilisateur connecté
-                'fonctionnalite_id' => 4,       // ID de la fonctionnalité (connexion)
-                'description_action' => "email Check on :".$data['data']['email']  // Description de l'action
-            ]);
+    
+            // Enregistrer le log de l'utilisateur
+            try {
+                $log = Log::create([
+                    'utilisateur_id' => $user->id,
+                    'fonctionnalite_id' => 4, // ID de la fonctionnalité
+                    'description_action' => "email Check on :" . $data['data']['email']
+                ]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'Erreur lors de l\'enregistrement du log: ' . $e->getMessage()], 500);
+            }
     
             // Retourner les informations extraites
             return response()->json($result);
+    
         } catch (RequestException $e) {
-            // Gérer les erreurs
-            return response()->json(['error' => 'HTTP Error: ' . $e->getCode() . ' - ' . $e->getMessage()], 500);
+            if ($e->hasResponse()) {
+                // Gérer les erreurs HTTP spécifiques
+                $statusCode = $e->getResponse()->getStatusCode();
+                $errorMessage = $e->getResponse()->getBody()->getContents();
+                return response()->json(['error' => 'Erreur API Hunter: ' . $statusCode . ' - ' . $errorMessage], $statusCode);
+            }
+    
+            // Autres erreurs de requête
+            return response()->json(['error' => 'Erreur de connexion à l\'API: ' . $e->getMessage()], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur inattendue: ' . $e->getMessage()], 500);
         }
     }
+    
 
     function envoyerEmail(Request $request) {
 
@@ -116,6 +141,7 @@ class HackController extends Controller
             return false;
         }
     }
+    
 
 
             

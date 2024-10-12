@@ -102,6 +102,32 @@ class AuthController extends Controller
         return response()->json(['token' => $token]);
     }
 
+    public function logout()
+    {
+        try {
+
+            $user = Auth::user();
+            
+            Log::create([
+                'utilisateur_id' => $user->id,  // ID de l'utilisateur connecté
+                'fonctionnalite_id' => 6,       // ID de la fonctionnalité (déconnexion)
+                'description_action' => "Déconnexion réussie",  // Description de l'action
+            ]);
+            // Invalider le token JWT
+            JWTAuth::invalidate(JWTAuth::getToken());
+            
+            // Enregistrer un log en base de données pour l'action de déconnexion
+
+            
+            return response()->json(['message' => 'Déconnexion réussie']);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return response()->json(['error' => 'Token déjà invalide'], 401);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de la déconnexion: ' . $e->getMessage()], 500);
+        }
+    }
+
+
 
     // Récupération de l'utilisateur authentifié
     public function me()
