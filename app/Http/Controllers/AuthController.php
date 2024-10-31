@@ -13,6 +13,43 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
+
+        /**
+     * @OA\Post(
+     *     path="/api/register",
+     *     summary="Inscription de l'utilisateur",
+     *     operationId="registerUser",
+     *     tags={"Authentification"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "email", "password"},
+     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *             @OA\Property(property="email", type="string", format="email", example="john.doe@example.com"),
+     *             @OA\Property(property="password", type="string", format="password", example="Password123"),
+     *             @OA\Property(property="password_confirmation", type="string", format="password", example="Password123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Utilisateur créé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="User created successfully"),
+     *             @OA\Property(property="user", type="object"),
+     *             @OA\Property(property="authorisation", type="object", 
+     *                 @OA\Property(property="token", type="string", example="token"),
+     *                 @OA\Property(property="type", type="string", example="bearer")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Erreur de validation"
+     *     )
+     * )
+     */
+
     // Inscription de l'utilisateur
         // Inscription de l'utilisateur
         public function register(Request $request)
@@ -46,7 +83,7 @@ class AuthController extends Controller
                 try {
                     // Générer un token JWT
                     $token = Auth::guard('api')->login($user);
-                    $log = Log::create([
+                    Log::create([
                         'utilisateur_id'=> $user->id,
                         'fonctionnalite_id'=> 1,
                         'description_action'=> "Inscription Réussie",
@@ -74,6 +111,34 @@ class AuthController extends Controller
         }
     
 
+    /**
+     * @OA\Post(
+     *     path="/api/login",
+     *     summary="Connexion de l'utilisateur",
+     *     operationId="loginUser",
+     *     tags={"Authentification"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email", "password"},
+     *             @OA\Property(property="email", type="string", format="email", example="john.doe@example.com"),
+     *             @OA\Property(property="password", type="string", format="password", example="Password123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Connexion réussie",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="token", type="string", example="token")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé"
+     *     )
+     * )
+     */
+
     // Connexion de l'utilisateur
     public function login(Request $request)
     {
@@ -89,7 +154,7 @@ class AuthController extends Controller
     
         // Enregistrer un log en base de données pour l'action de connexion
         try {
-            $log = Log::create([
+            Log::create([
                 'utilisateur_id' => $user->id,  // ID de l'utilisateur connecté
                 'fonctionnalite_id' => 2,       // ID de la fonctionnalité (connexion)
                 'description_action' => "Connexion réussie",  // Description de l'action
@@ -101,6 +166,26 @@ class AuthController extends Controller
     
         return response()->json(['token' => $token]);
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/logout",
+     *     summary="Déconnexion de l'utilisateur",
+     *     operationId="logoutUser",
+     *     tags={"Authentification"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Déconnexion réussie",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Déconnexion réussie")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Token invalide"
+     *     )
+     * )
+     */
 
     public function logout()
     {
@@ -128,6 +213,28 @@ class AuthController extends Controller
     }
 
 
+    /**
+     * @OA\Get(
+     *     path="/api/me",
+     *     summary="Récupération de l'utilisateur authentifié",
+     *     operationId="getAuthenticatedUser",
+     *     tags={"Authentification"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Utilisateur authentifié",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="email", type="string", example="john.doe@example.com"),
+     *             @OA\Property(property="nom", type="string", example="John Doe"),
+     *             @OA\Property(property="statut", type="string", example="actif"),
+     *             @OA\Property(property="date_creation", type="string", format="date-time", example="2024-10-26T12:30:00Z")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Utilisateur non authentifié"
+     *     )
+     * )
+     */
 
     // Récupération de l'utilisateur authentifié
     public function me()
@@ -142,7 +249,7 @@ class AuthController extends Controller
     
         try {
             // Enregistrer un log en base de données pour la consultation du profil
-            $log = Log::create([
+            Log::create([
                 'utilisateur_id' => $user->id,  // ID de l'utilisateur connecté
                 'fonctionnalite_id' => 3,       // ID de la fonctionnalité (consultation profil)
                 'description_action' => "consultation profil",  // Description de l'action
