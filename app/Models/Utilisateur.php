@@ -43,7 +43,6 @@ class Utilisateur extends Authenticatable implements JWTSubject
 		'email',
 		'role_id',
 		'motDePasse',
-		'statut',
 		'dateCreation'
 	];
 

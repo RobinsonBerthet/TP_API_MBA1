@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use HttpRequest;
 use App\Models\Log;
+use App\Models\Droit;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use PHPMailer\PHPMailer\Exception;
@@ -19,12 +20,40 @@ use SerpApi\GoogleSearch;
 
 class HackController extends Controller
 {
+
+    function checkRules($fonctionnalite_id, $current_role_id)
+    {
+        //verifier que l'utilisateur a le droit d'acceder à la fonctionnalité
+        try{
+            $droit = Droit::where('fonctionnalite_id', $fonctionnalite_id)->first();
+            if(!$droit){
+                return true;
+            }
+            else
+            {
+                if($droit->role_id == $current_role_id){
+                    return true;
+                }
+                else if($droit->role_id < $current_role_id){
+                    return false;
+                }
+            }
+        }
+        catch(\Exception $e){
+            return response()->json(['error' => 'Erreur lors de la vérification des droits '.$e], 500);
+        }
+    }
+
     public function emailChecker($email)
     {
         $user = Auth::user();
     
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+        if(!$this->checkRules(4, $user->role_id))
+        {
+            return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
     
         try {
@@ -97,6 +126,10 @@ class HackController extends Controller
             // Si l'utilisateur n'est pas authentifié, renvoyer une réponse avec une erreur 401
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
+        if(!$this->checkRules(5, $user->role_id))
+        {
+            return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
+        }
 
         try{
 
@@ -153,6 +186,10 @@ class HackController extends Controller
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
+        if(!$this->checkRules(7, $user->role_id))
+        {
+            return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
+        }
 
         // Valider que la requête a bien un paramètre 'password'
         $request->validate([
@@ -201,6 +238,10 @@ class HackController extends Controller
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
+        if(!$this->checkRules(8, $user->role_id))
+        {
+            return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
+        }
 
         try {
             Log::create([
@@ -226,6 +267,10 @@ class HackController extends Controller
 
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+        if(!$this->checkRules(9, $user->role_id))
+        {
+            return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
 
         // return response()->json($apiKey);
@@ -269,6 +314,10 @@ class HackController extends Controller
 
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+        if(!$this->checkRules(11, $user->role_id))
+        {
+            return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
         // Valider les données d'entrée
         $request->validate([
@@ -318,6 +367,11 @@ class HackController extends Controller
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
+
+        if(!$this->checkRules(10, $user->role_id))
+        {
+            return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
+        }
         // Créer une instance de Faker
         $faker = Faker::create();
 
@@ -350,6 +404,11 @@ class HackController extends Controller
     
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        if(!$this->checkRules(12, $user->role_id))
+        {
+            return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
     
         // Valider que l'adresse est fournie et qu'elle est une URL valide
@@ -410,7 +469,7 @@ class HackController extends Controller
                         formDataObj[key] = value;
                     });
 
-                    fetch('http://127.0.0.1:8000/api/getData', {
+                    fetch('http://127.0.0.1:8000/api/getDataFromPhishing', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -461,14 +520,9 @@ class HackController extends Controller
         }
     }
     
-    public function getData(Request $request)
+    public function getDataFromPhishing(Request $request)
     {
-        // Vérifier que l'utilisateur est authentifié
-        // $user = Auth::user();
 
-        // if (!$user) {
-        //     return response()->json(['error' => 'Utilisateur non authentifié'], 401);
-        // }
 
         // Valider les données envoyées (en fonction des champs que vous attendez dans le formulaire)
         $request->validate([
@@ -491,6 +545,39 @@ class HackController extends Controller
         }
     }
 
+    public function getRandomPerson()
+    {
+        //ce site genere des personnes aleatoires https://thispersondoesnotexist.com/ retourne la dans la reponse, et loguer l'action
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        if(!$this->checkRules(15, $user->role_id))
+        {
+            return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
+        }
+
+        
+
+        $response = Http::get('https://thispersondoesnotexist.com');
+
+        try {
+            Log::create([
+                'utilisateur_id' => $user->id,
+                'fonctionnalite_id' => 15, // ID de la fonctionnalité
+                'description_action' => "generation d'une personne aléatoire (image)"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de l\'enregistrement du log: ' . $e->getMessage()], 500);
+        }
+
+        return response($response->body())->header('Content-Type', 'image/jpeg');
+
+
+    }
+
 
     public function crawlerInformation(Request $request)
     {
@@ -499,6 +586,11 @@ class HackController extends Controller
 
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        if(!$this->checkRules(14, $user->role_id))
+        {
+            return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
 
         $apiKey = env('SERP_API_KEY'); // Récupérer la clé API
@@ -517,6 +609,21 @@ class HackController extends Controller
     
             // Récupérer et décoder la réponse JSON
             $result = json_decode($response->getBody(), true);
+
+            try {
+                // Enregistrer les données dans la table des logs
+                Log::create([
+                    'utilisateur_id' => $user->id, // L'ID de l'utilisateur
+                    'fonctionnalite_id' => 14,      // ID de la fonctionnalité associée (à personnaliser selon votre logique)
+                    'description_action' => "Recuperation de données sur: $request->search", // Enregistrer les données sous forme de texte
+                ]); 
+    
+                // Retourner une réponse JSON confirmant l'enregistrement
+                return response()->json(['success' => 'Données enregistrées avec succès'], 200);
+            } catch (\Exception $e) {
+                // Gérer les erreurs
+                return response()->json(['error' => 'Erreur lors de l\'enregistrement des données : ' . $e->getMessage()], 500);
+            }
 
             return $result;
     

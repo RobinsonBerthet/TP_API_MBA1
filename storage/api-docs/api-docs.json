@@ -220,6 +220,231 @@
                     }
                 }
             }
+        },
+        "/email-checker/{email}": {
+            "get": {
+                "summary": "Vérifie un email avec l'API Hunter.io",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "path",
+                        "required": true,
+                        "description": "L'adresse email à vérifier.",
+                        "schema": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Informations sur l'email.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "email": "test@example.com",
+                                    "score": "95%",
+                                    "status": "valid"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Adresse email invalide ou erreur API Hunter.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "Adresse email invalide"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "Utilisateur non authentifié"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/envoyer-email": {
+            "post": {
+                "summary": "Envoie un email à un destinataire.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "destinataire": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "objet": {
+                                        "type": "string"
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    },
+                                    "nombreEmail": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "destinataire",
+                                    "objet",
+                                    "message",
+                                    "nombreEmail"
+                                ]
+                            },
+                            "example": {
+                                "destinataire": "recipient@example.com",
+                                "objet": "Test Email",
+                                "message": "Ceci est un message de test.",
+                                "nombreEmail": 3
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email envoyé avec succès."
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "Utilisateur non authentifié"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/check-password": {
+            "post": {
+                "summary": "Vérifie si un mot de passe est courant.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "password"
+                                ]
+                            },
+                            "example": {
+                                "password": "123456"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Le mot de passe est-il courant ?",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "exists": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "Utilisateur non authentifié"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/generate-password": {
+            "get": {
+                "summary": "Génère un mot de passe aléatoire.",
+                "responses": {
+                    "200": {
+                        "description": "Mot de passe généré.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "password": "A1b2C3d4E5f6G7h8"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "Utilisateur non authentifié"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/get-subdomains/{domain}": {
+            "get": {
+                "summary": "Récupère les sous-domaines d'un domaine.",
+                "parameters": [
+                    {
+                        "name": "domain",
+                        "in": "path",
+                        "required": true,
+                        "description": "Le domaine pour lequel récupérer les sous-domaines.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des sous-domaines.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "subdomains": [
+                                        "www",
+                                        "mail",
+                                        "api"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié.",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "Utilisateur non authentifié"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "tags": [

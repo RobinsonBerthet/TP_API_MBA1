@@ -76,6 +76,7 @@ class AuthController extends Controller
                     'nom' => $validatedData['name'],  // Champ 'nom' dans la table
                     'email' => $validatedData['email'],
                     'motDePasse' => Hash::make($validatedData['password']), // Champ 'motDePasse' dans la table
+                    'role_id' => 2,  // ID du rôle (1 = admin)
                 ]);
 
     
