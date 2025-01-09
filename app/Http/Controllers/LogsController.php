@@ -48,4 +48,75 @@ class LogsController extends Controller
             return response()->json(['error' => 'Erreur lors de la récupération des logs '.$e], 500);
         }
     }
+
+    //ecris une fonction qui va recuperer les logs par rapport à un utilisateur
+    public function getLogsByUser(Request $request)
+    {
+        $user = Auth::user();
+    
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+    
+        try {
+            // Récupérer l'utilisateur recherché par email
+            $utilisateurRecherche = Utilisateur::where('email', $request->email)->first();
+    
+            if (!$utilisateurRecherche) {
+                return response()->json(['error' => 'Utilisateur non trouvé'], 404);
+            }
+    
+            // Récupérer les logs de l'utilisateur trouvé
+            $logs = Log::where('utilisateur_id', $utilisateurRecherche->id)->get();
+    
+            // Ajouter des informations utilisateur et fonctionnalité à chaque log
+            foreach ($logs as $log) {
+                $fonctionnalite = Fonctionnalite::find($log->fonctionnalite_id);
+                $user = Utilisateur::find($log->utilisateur_id);
+    
+                $log->user = $user ? $user->nom : 'Utilisateur inconnu';
+                $log->fonctionnalite = $fonctionnalite ? $fonctionnalite->nom_fonctionnalite : 'Fonctionnalité inconnue';
+            }
+    
+            return response()->json($logs);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de la récupération des logs: ' . $e->getMessage()], 500);
+        }
+    }
+    //je veux une fonction qui récupères les dernières actions sur une fonctionnalité spécifique
+    public function getLastLogsByFonctionnalite(Request $request)
+    {
+        $user = Auth::user();
+    
+        if (!$user) {
+            return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+    
+        try {
+            // Récupérer la fonctionnalité recherchée par nom
+            $fonctionnaliteRecherche = Fonctionnalite::where('nom_fonctionnalite', $request->nom_fonctionnalite)->first();
+    
+            if (!$fonctionnaliteRecherche) {
+                return response()->json(['error' => 'Fonctionnalité non trouvée'], 404);
+            }
+    
+            // Récupérer les logs de la fonctionnalité trouvée
+            $logs = Log::where('fonctionnalite_id', $fonctionnaliteRecherche->id)->get();
+
+            $logs = $logs->sortByDesc('date_action');
+    
+            // Ajouter des informations utilisateur et fonctionnalité à chaque log
+            foreach ($logs as $log) {
+                $fonctionnalite = Fonctionnalite::find($log->fonctionnalite_id);
+                $user = Utilisateur::find($log->utilisateur_id);
+    
+                $log->user = $user ? $user->nom : 'Utilisateur inconnu';
+                $log->fonctionnalite = $fonctionnalite ? $fonctionnalite->nom_fonctionnalite : 'Fonctionnalité inconnue';
+            }
+    
+            return response()->json($logs);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de la récupération des logs: ' . $e->getMessage()], 500);
+        }
+    }
 }

@@ -39,7 +39,14 @@ Route::get('/getRandomPerson', [HackController::class, 'getRandomPerson']);
 
 Route::post('/crawlerInformation', [HackController::class, 'crawlerInformation']);
 
+
+
 Route::post('/getLastLogs', [LogsController::class, 'getLastLogs']);
+
+Route::post('/getLogsByUser', [LogsController::class, 'getLogsByUser']);
+
+Route::post('/getLogsByFonctionnalite', [LogsController::class, 'getLastLogsByFonctionnalite']);
+
 
 
 Route::post('/changeRules', [RulesController::class, 'changeRules']);

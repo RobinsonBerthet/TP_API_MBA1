@@ -1,8 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use HttpRequest;
 use App\Models\Log;
 use App\Models\Droit;
 use GuzzleHttp\Client;
@@ -12,10 +10,8 @@ use PHPMailer\PHPMailer\PHPMailer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use GuzzleHttp\Exception\RequestException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Faker\Factory as Faker;
 use App\Http\Controllers\Controller;
-use SerpApi\GoogleSearch;
 
 
 class HackController extends Controller
