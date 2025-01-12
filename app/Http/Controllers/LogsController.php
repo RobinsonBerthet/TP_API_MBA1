@@ -18,6 +18,11 @@ class LogsController extends Controller
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
         }
+
+        //verifier que l'utilisateur est un admin (table role) role_id = 1
+        if($user->role_id != 1){
+            return response()->json(['error' => 'Vous n\'avez pas les droits pour accéder à cette ressource'], 403);
+        }
         
         try{
             $logs = Log::all()->sortByDesc('date_action')->take($request->nbLogs);
@@ -53,9 +58,14 @@ class LogsController extends Controller
     public function getLogsByUser(Request $request)
     {
         $user = Auth::user();
-    
+
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        //verifier que l'utilisateur est un admin (table role) role_id = 1
+        if($user->role_id != 1){
+            return response()->json(['error' => 'Vous n\'avez pas les droits pour accéder à cette ressource'], 403);
         }
     
         try {
@@ -87,9 +97,14 @@ class LogsController extends Controller
     public function getLastLogsByFonctionnalite(Request $request)
     {
         $user = Auth::user();
-    
+
         if (!$user) {
             return response()->json(['error' => 'Utilisateur non authentifié'], 401);
+        }
+
+        //verifier que l'utilisateur est un admin (table role) role_id = 1
+        if($user->role_id != 1){
+            return response()->json(['error' => 'Vous n\'avez pas les droits pour accéder à cette ressource'], 403);
         }
     
         try {

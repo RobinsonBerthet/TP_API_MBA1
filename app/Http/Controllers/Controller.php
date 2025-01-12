@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
     /**
  * @OA\Info(
- *     title="Nom de ton API",
+ *     title="API HackR",
  *     version="1.0",
- *     description="Description de ton API"
+ *     description="Voici la documentation de l'API HackR. Vous pouvez tester les différentes routes (Authentification, hack, logs & rules) en utilisant l'interface Swagger."
  * )
  */
 

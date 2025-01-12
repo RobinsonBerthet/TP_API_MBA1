@@ -1,8 +1,8 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Nom de ton API",
-        "description": "Description de ton API",
+        "title": "API HackR",
+        "description": "Voici la documentation de l'API HackR. Vous pouvez tester les différentes routes (Authentification, hack, logs & rules) en utilisant l'interface Swagger.",
         "version": "1.0"
     },
     "paths": {
@@ -221,15 +221,20 @@
                 }
             }
         },
-        "/email-checker/{email}": {
+        "/emailChecker/{email}": {
             "get": {
-                "summary": "Vérifie un email avec l'API Hunter.io",
+                "tags": [
+                    "HackController"
+                ],
+                "summary": "Vérifier un email via l'API Hunter.io",
+                "description": "Cette méthode permet de vérifier un email en utilisant l'API Hunter.io pour obtenir son statut et son score.",
+                "operationId": "c4137e15d2b5511197dbd9367150054e",
                 "parameters": [
                     {
                         "name": "email",
                         "in": "path",
+                        "description": "Adresse email à vérifier",
                         "required": true,
-                        "description": "L'adresse email à vérifier.",
                         "schema": {
                             "type": "string",
                             "format": "email"
@@ -238,33 +243,82 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Informations sur l'email.",
+                        "description": "Email validé avec succès",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "email": "test@example.com",
-                                    "score": "95%",
-                                    "status": "valid"
+                                "schema": {
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "score": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Adresse email invalide ou erreur API Hunter.",
+                        "description": "Email invalide ou erreur de l'API Hunter",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "error": "Adresse email invalide"
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
                     "401": {
-                        "description": "Utilisateur non authentifié.",
+                        "description": "Utilisateur non authentifié",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "error": "Utilisateur non authentifié"
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit selon les règles de l'utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -272,15 +326,25 @@
                 }
             }
         },
-        "/envoyer-email": {
+        "/spam": {
             "post": {
-                "summary": "Envoie un email à un destinataire.",
+                "tags": [
+                    "HackController"
+                ],
+                "summary": "Envoyer des emails en masse",
+                "description": "Cette méthode permet d'envoyer un ou plusieurs emails à un destinataire spécifié.",
+                "operationId": "a00b5aa1601879d08065e22cf817adff",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object",
+                                "required": [
+                                    "destinataire",
+                                    "objet",
+                                    "message",
+                                    "nombreEmail"
+                                ],
                                 "properties": {
                                     "destinataire": {
                                         "type": "string",
@@ -296,32 +360,71 @@
                                         "type": "integer"
                                     }
                                 },
-                                "required": [
-                                    "destinataire",
-                                    "objet",
-                                    "message",
-                                    "nombreEmail"
-                                ]
-                            },
-                            "example": {
-                                "destinataire": "recipient@example.com",
-                                "objet": "Test Email",
-                                "message": "Ceci est un message de test.",
-                                "nombreEmail": 3
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Email envoyé avec succès."
+                        "description": "Emails envoyés avec succès"
                     },
-                    "401": {
-                        "description": "Utilisateur non authentifié.",
+                    "400": {
+                        "description": "Requête invalide",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "error": "Utilisateur non authentifié"
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit selon les règles de l'utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -331,45 +434,102 @@
         },
         "/check-password": {
             "post": {
-                "summary": "Vérifie si un mot de passe est courant.",
+                "tags": [
+                    "HackController"
+                ],
+                "summary": "Vérifier si un mot de passe est commun",
+                "description": "Cette méthode permet de vérifier si le mot de passe fourni existe dans une liste de mots de passe courants.",
+                "operationId": "67a8eb09340f8c2eb373b3b49d030d08",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object",
+                                "required": [
+                                    "password"
+                                ],
                                 "properties": {
                                     "password": {
                                         "type": "string"
                                     }
                                 },
-                                "required": [
-                                    "password"
-                                ]
-                            },
-                            "example": {
-                                "password": "123456"
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Le mot de passe est-il courant ?",
+                        "description": "Résultat de la vérification du mot de passe",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "exists": true
+                                "schema": {
+                                    "properties": {
+                                        "exists": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Mot de passe manquant ou mal formaté",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
                     "401": {
-                        "description": "Utilisateur non authentifié.",
+                        "description": "Utilisateur non authentifié",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "error": "Utilisateur non authentifié"
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit selon les règles de l'utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -377,26 +537,71 @@
                 }
             }
         },
-        "/generate-password": {
+        "/passwordGenerator": {
             "get": {
-                "summary": "Génère un mot de passe aléatoire.",
+                "tags": [
+                    "HackController"
+                ],
+                "summary": "Générer un mot de passe aléatoire",
+                "description": "Cette méthode permet de générer un mot de passe aléatoire pour l'utilisateur.",
+                "operationId": "ea81e750265e7751274caecd302de9fa",
                 "responses": {
                     "200": {
-                        "description": "Mot de passe généré.",
+                        "description": "Mot de passe généré avec succès",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "password": "A1b2C3d4E5f6G7h8"
+                                "schema": {
+                                    "properties": {
+                                        "password": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
                     "401": {
-                        "description": "Utilisateur non authentifié.",
+                        "description": "Utilisateur non authentifié",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "error": "Utilisateur non authentifié"
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit selon les règles de l'utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -404,15 +609,20 @@
                 }
             }
         },
-        "/get-subdomains/{domain}": {
+        "/subdomains/{domain}": {
             "get": {
-                "summary": "Récupère les sous-domaines d'un domaine.",
+                "tags": [
+                    "HackController"
+                ],
+                "summary": "Récupérer les sous-domaines d'un domaine",
+                "description": "Cette méthode permet de récupérer les sous-domaines d'un domaine en utilisant l'API SecurityTrails.",
+                "operationId": "7c9d5fcd095791af14c0d0fa70e6fe92",
                 "parameters": [
                     {
                         "name": "domain",
                         "in": "path",
+                        "description": "Nom du domaine",
                         "required": true,
-                        "description": "Le domaine pour lequel récupérer les sous-domaines.",
                         "schema": {
                             "type": "string"
                         }
@@ -420,25 +630,59 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Liste des sous-domaines.",
+                        "description": "Liste des sous-domaines récupérée avec succès",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "subdomains": [
-                                        "www",
-                                        "mail",
-                                        "api"
-                                    ]
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
                                 }
                             }
                         }
                     },
                     "401": {
-                        "description": "Utilisateur non authentifié.",
+                        "description": "Utilisateur non authentifié",
                         "content": {
                             "application/json": {
-                                "example": {
-                                    "error": "Utilisateur non authentifié"
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit selon les règles de l'utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -451,6 +695,10 @@
         {
             "name": "Authentification",
             "description": "Authentification"
+        },
+        {
+            "name": "HackController",
+            "description": "HackController"
         }
     ]
 }
