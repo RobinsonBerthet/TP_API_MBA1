@@ -112,12 +112,12 @@
                                     "email": {
                                         "type": "string",
                                         "format": "email",
-                                        "example": "john.doe@example.com"
+                                        "example": "haitam.elq@gmail.com"
                                     },
                                     "password": {
                                         "type": "string",
                                         "format": "password",
-                                        "example": "Password123"
+                                        "example": "12345678"
                                     }
                                 },
                                 "type": "object"
@@ -221,19 +221,19 @@
                 }
             }
         },
-        "/emailChecker/{email}": {
+        "/api/emailChecker/{email}": {
             "get": {
                 "tags": [
-                    "HackController"
+                    "Hacking"
                 ],
-                "summary": "Vérifier un email via l'API Hunter.io",
-                "description": "Cette méthode permet de vérifier un email en utilisant l'API Hunter.io pour obtenir son statut et son score.",
-                "operationId": "c4137e15d2b5511197dbd9367150054e",
+                "summary": "Vérifie un email avec l'API Hunter.io",
+                "description": "Cette méthode vérifie si un email est valide et retourne un score de validité en utilisant l'API Hunter.io.",
+                "operationId": "emailChecker",
                 "parameters": [
                     {
                         "name": "email",
                         "in": "path",
-                        "description": "Adresse email à vérifier",
+                        "description": "L'adresse email à vérifier",
                         "required": true,
                         "schema": {
                             "type": "string",
@@ -243,18 +243,21 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Email validé avec succès",
+                        "description": "Résultat de la vérification de l'email",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "email": {
+                                            "description": "Adresse email vérifiée",
                                             "type": "string"
                                         },
                                         "score": {
+                                            "description": "Score de validité de l'email (en pourcentage)",
                                             "type": "string"
                                         },
                                         "status": {
+                                            "description": "Statut de l'email ('valid', 'invalid', etc.)",
                                             "type": "string"
                                         }
                                     },
@@ -264,12 +267,13 @@
                         }
                     },
                     "400": {
-                        "description": "Email invalide ou erreur de l'API Hunter",
+                        "description": "Erreur de validation de l'email ou erreur spécifique de l'API Hunter.io",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
+                                            "description": "Détail de l'erreur",
                                             "type": "string"
                                         }
                                     },
@@ -285,6 +289,7 @@
                                 "schema": {
                                     "properties": {
                                         "error": {
+                                            "description": "Message d'erreur",
                                             "type": "string"
                                         }
                                     },
@@ -294,12 +299,13 @@
                         }
                     },
                     "403": {
-                        "description": "Accès interdit selon les règles de l'utilisateur",
+                        "description": "Accès interdit à la ressource",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
+                                            "description": "Message d'erreur",
                                             "type": "string"
                                         }
                                     },
@@ -315,6 +321,7 @@
                                 "schema": {
                                     "properties": {
                                         "error": {
+                                            "description": "Message d'erreur",
                                             "type": "string"
                                         }
                                     },
@@ -323,18 +330,24 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/spam": {
+        "/api/spam": {
             "post": {
                 "tags": [
-                    "HackController"
+                    "Hacking"
                 ],
-                "summary": "Envoyer des emails en masse",
-                "description": "Cette méthode permet d'envoyer un ou plusieurs emails à un destinataire spécifié.",
-                "operationId": "a00b5aa1601879d08065e22cf817adff",
+                "summary": "Envoie un ou plusieurs emails",
+                "description": "Cette méthode permet d'envoyer des emails en utilisant le service SMTP Gmail. Elle nécessite que l'utilisateur soit authentifié et dispose des permissions nécessaires.",
+                "operationId": "envoyerEmail",
                 "requestBody": {
+                    "description": "Données nécessaires pour envoyer un email",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -347,16 +360,20 @@
                                 ],
                                 "properties": {
                                     "destinataire": {
+                                        "description": "Adresse email du destinataire",
                                         "type": "string",
                                         "format": "email"
                                     },
                                     "objet": {
+                                        "description": "Sujet de l'email",
                                         "type": "string"
                                     },
                                     "message": {
+                                        "description": "Contenu de l'email",
                                         "type": "string"
                                     },
                                     "nombreEmail": {
+                                        "description": "Nombre d'emails à envoyer",
                                         "type": "integer"
                                     }
                                 },
@@ -367,15 +384,24 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Emails envoyés avec succès"
+                        "description": "Email(s) envoyé(s) avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "boolean"
+                                },
+                                "example": true
+                            }
+                        }
                     },
                     "400": {
-                        "description": "Requête invalide",
+                        "description": "Erreur de validation des données",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
+                                            "description": "Message d'erreur",
                                             "type": "string"
                                         }
                                     },
@@ -391,6 +417,7 @@
                                 "schema": {
                                     "properties": {
                                         "error": {
+                                            "description": "Message d'erreur",
                                             "type": "string"
                                         }
                                     },
@@ -400,12 +427,13 @@
                         }
                     },
                     "403": {
-                        "description": "Accès interdit selon les règles de l'utilisateur",
+                        "description": "Accès interdit à la ressource",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
+                                            "description": "Message d'erreur",
                                             "type": "string"
                                         }
                                     },
@@ -415,12 +443,13 @@
                         }
                     },
                     "500": {
-                        "description": "Erreur serveur",
+                        "description": "Erreur serveur ou problème d'envoi d'email",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
+                                            "description": "Message d'erreur",
                                             "type": "string"
                                         }
                                     },
@@ -429,17 +458,22 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/check-password": {
+        "/api/check-password": {
             "post": {
                 "tags": [
-                    "HackController"
+                    "Hacking"
                 ],
-                "summary": "Vérifier si un mot de passe est commun",
+                "summary": "Vérifie si un mot de passe est commun",
                 "description": "Cette méthode permet de vérifier si le mot de passe fourni existe dans une liste de mots de passe courants.",
-                "operationId": "67a8eb09340f8c2eb373b3b49d030d08",
+                "operationId": "410b669147a39d56e2f1905ba7049463",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -450,7 +484,8 @@
                                 ],
                                 "properties": {
                                     "password": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "dragon"
                                     }
                                 },
                                 "type": "object"
@@ -460,28 +495,14 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Résultat de la vérification du mot de passe",
+                        "description": "Mot de passe valide ou invalide",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "exists": {
-                                            "type": "boolean"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Mot de passe manquant ou mal formaté",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string"
+                                        "is_common": {
+                                            "type": "boolean",
+                                            "example": true
                                         }
                                     },
                                     "type": "object"
@@ -490,61 +511,24 @@
                         }
                     },
                     "401": {
-                        "description": "Utilisateur non authentifié",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Accès interdit selon les règles de l'utilisateur",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Erreur serveur",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Utilisateur non authentifié"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/passwordGenerator": {
+        "/api/passwordGenerator": {
             "get": {
                 "tags": [
-                    "HackController"
+                    "Hacking"
                 ],
-                "summary": "Générer un mot de passe aléatoire",
-                "description": "Cette méthode permet de générer un mot de passe aléatoire pour l'utilisateur.",
-                "operationId": "ea81e750265e7751274caecd302de9fa",
+                "summary": "Génère un mot de passe aléatoire sécurisé",
+                "description": "Cette méthode génère un mot de passe aléatoire sécurisé de 16 caractères, comprenant des lettres, chiffres et symboles spéciaux. Elle nécessite une authentification et une autorisation.",
+                "operationId": "generatePassword",
                 "responses": {
                     "200": {
                         "description": "Mot de passe généré avec succès",
@@ -553,6 +537,7 @@
                                 "schema": {
                                     "properties": {
                                         "password": {
+                                            "description": "Mot de passe généré",
                                             "type": "string"
                                         }
                                     },
@@ -568,7 +553,8 @@
                                 "schema": {
                                     "properties": {
                                         "error": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
                                         }
                                     },
                                     "type": "object"
@@ -577,13 +563,14 @@
                         }
                     },
                     "403": {
-                        "description": "Accès interdit selon les règles de l'utilisateur",
+                        "description": "Accès interdit à la ressource",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Interdis d'accéder à la ressource."
                                         }
                                     },
                                     "type": "object"
@@ -592,12 +579,13 @@
                         }
                     },
                     "500": {
-                        "description": "Erreur serveur",
+                        "description": "Erreur interne lors de la génération ou de l'enregistrement du log",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
+                                            "description": "Message d'erreur détaillé",
                                             "type": "string"
                                         }
                                     },
@@ -606,22 +594,27 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/subdomains/{domain}": {
+        "/api/subdomains/{domain}": {
             "get": {
                 "tags": [
-                    "HackController"
+                    "Hacking"
                 ],
-                "summary": "Récupérer les sous-domaines d'un domaine",
-                "description": "Cette méthode permet de récupérer les sous-domaines d'un domaine en utilisant l'API SecurityTrails.",
-                "operationId": "7c9d5fcd095791af14c0d0fa70e6fe92",
+                "summary": "Récupère les sous-domaines d'un domaine",
+                "description": "Cette méthode permet de récupérer la liste des sous-domaines d'un domaine spécifié. L'utilisateur doit être authentifié et autorisé.",
+                "operationId": "getSubdomains",
                 "parameters": [
                     {
                         "name": "domain",
                         "in": "path",
-                        "description": "Nom du domaine",
+                        "description": "Le domaine pour lequel récupérer les sous-domaines",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -630,13 +623,650 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Liste des sous-domaines récupérée avec succès",
+                        "description": "Sous-domaines récupérés avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "subdomains": {
+                                            "description": "Liste des sous-domaines du domaine",
+                                            "type": "array",
+                                            "items": [
+                                                {
+                                                    "type": "string"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit à la ressource",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Interdis d'accéder à la ressource."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne lors de l'enregistrement du log ou de la récupération des sous-domaines",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Message d'erreur détaillé",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Domaine invalide",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Le domaine spécifié est invalide."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/ddos": {
+            "post": {
+                "tags": [
+                    "Hacking"
+                ],
+                "summary": "Effectue une attaque DDoS simulée",
+                "description": "Cette méthode permet de simuler une attaque DDoS en envoyant un nombre défini de requêtes HTTP à une URL spécifiée. L'utilisateur doit être authentifié et autorisé à effectuer cette action.",
+                "operationId": "ddos",
+                "requestBody": {
+                    "description": "Les données nécessaires pour simuler l'attaque DDoS",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "url",
+                                    "count"
+                                ],
+                                "properties": {
+                                    "url": {
+                                        "description": "L'URL cible de l'attaque",
+                                        "type": "string",
+                                        "format": "uri"
+                                    },
+                                    "count": {
+                                        "description": "Le nombre de requêtes à envoyer pour simuler l'attaque",
+                                        "type": "integer",
+                                        "example": 10
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Réponse des requêtes DDoS",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "array",
                                     "items": {
-                                        "type": "string"
+                                        "properties": {
+                                            "request_number": {
+                                                "description": "Numéro de la requête envoyée",
+                                                "type": "integer"
+                                            },
+                                            "http_code": {
+                                                "description": "Code HTTP retourné",
+                                                "type": "integer"
+                                            },
+                                            "response": {
+                                                "description": "Réponse du serveur",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Paramètres invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Les paramètres fournis sont invalides."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit à la ressource",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Interdis d'accéder à la ressource."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne lors de l'enregistrement du log ou de l'exécution de la requête",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Message d'erreur détaillé",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/generate-identity": {
+            "get": {
+                "tags": [
+                    "Hacking"
+                ],
+                "summary": "Génère une identité fictive aléatoire",
+                "description": "Cette méthode génère une identité fictive aléatoire incluant un nom, un email, une adresse et un numéro de téléphone. L'utilisateur doit être authentifié et autorisé à effectuer cette action.",
+                "operationId": "generateIdentity",
+                "responses": {
+                    "200": {
+                        "description": "Identité générée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "name": {
+                                            "description": "Nom généré",
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "description": "Email généré",
+                                            "type": "string"
+                                        },
+                                        "address": {
+                                            "description": "Adresse générée",
+                                            "type": "string"
+                                        },
+                                        "phone": {
+                                            "description": "Numéro de téléphone généré",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit à la ressource",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Interdis d'accéder à la ressource."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne lors de l'enregistrement du log",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Message d'erreur détaillé",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/phishing": {
+            "post": {
+                "tags": [
+                    "Hacking"
+                ],
+                "summary": "Effectue une attaque de type phishing sur un site",
+                "description": "Cette méthode permet de récupérer le contenu HTML d'un site donné, d'y injecter un script de phishing et de le renvoyer modifié. L'utilisateur doit être authentifié et autorisé à effectuer cette action.",
+                "operationId": "phishing",
+                "requestBody": {
+                    "description": "Objet JSON contenant l'adresse du site à analyser",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "adresse"
+                                ],
+                                "properties": {
+                                    "adresse": {
+                                        "description": "URL du site à analyser pour l'attaque de phishing",
+                                        "type": "string",
+                                        "example": "https://www.facebook.com/login"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Contenu HTML modifié avec succès et script injecté",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "description": "HTML du site avec le script de phishing injecté",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit à la ressource",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Interdis d'accéder à la ressource."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne lors de l'analyse ou de l'injection du script",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Message d'erreur détaillé",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/getRandomPerson": {
+            "get": {
+                "tags": [
+                    "Hacking"
+                ],
+                "summary": "Génère une image d'une personne aléatoire",
+                "description": "Cette méthode génère une image d'une personne aléatoire en récupérant une photo depuis le site https://thispersondoesnotexist.com. Elle nécessite une authentification et une autorisation.",
+                "operationId": "getRandomPerson",
+                "responses": {
+                    "200": {
+                        "description": "Image de la personne aléatoire générée avec succès",
+                        "content": {
+                            "image/jpeg": {}
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit à la ressource",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Interdis d'accéder à la ressource."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne lors de la génération ou de l'enregistrement du log",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Message d'erreur détaillé",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/crawlerInformation": {
+            "post": {
+                "tags": [
+                    "Hacking"
+                ],
+                "summary": "Récupère des informations via un moteur de recherche externe",
+                "description": "Cette méthode effectue une recherche via l'API SerpApi, et récupère des informations basées sur la requête fournie. Elle nécessite une authentification et une autorisation appropriée.",
+                "operationId": "crawlerInformation",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "search"
+                                ],
+                                "properties": {
+                                    "search": {
+                                        "type": "string",
+                                        "example": "Laravel tutorial"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Données récupérées et enregistrées avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "result": {
+                                            "description": "Les résultats de la recherche récupérés depuis SerpApi",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit à la ressource",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Interdis d'accéder à la ressource."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne lors de la récupération ou de l'enregistrement des données",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Message d'erreur détaillé",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/getLastLogs": {
+            "post": {
+                "tags": [
+                    "Logs"
+                ],
+                "summary": "Récupère les derniers logs d'activité",
+                "description": "Cette méthode permet à un administrateur de récupérer les derniers logs d'activité, triés par date. Elle nécessite que l'utilisateur soit authentifié et possède le rôle d'administrateur.",
+                "operationId": "getLastLogs",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nbLogs"
+                                ],
+                                "properties": {
+                                    "nbLogs": {
+                                        "description": "Le nombre de derniers logs à récupérer",
+                                        "type": "integer",
+                                        "example": 10
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Les derniers logs récupérés avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "user": {
+                                                "description": "Nom de l'utilisateur ayant effectué l'action",
+                                                "type": "string"
+                                            },
+                                            "fonctionnalite": {
+                                                "description": "Nom de la fonctionnalité associée à l'action",
+                                                "type": "string"
+                                            },
+                                            "date_action": {
+                                                "description": "Date et heure de l'action",
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "description_action": {
+                                                "description": "Description de l'action réalisée",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
                                     }
                                 }
                             }
@@ -649,7 +1279,8 @@
                                 "schema": {
                                     "properties": {
                                         "error": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
                                         }
                                     },
                                     "type": "object"
@@ -658,13 +1289,14 @@
                         }
                     },
                     "403": {
-                        "description": "Accès interdit selon les règles de l'utilisateur",
+                        "description": "Accès interdit pour l'utilisateur",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "example": "Vous n'avez pas les droits pour accéder à cette ressource"
                                         }
                                     },
                                     "type": "object"
@@ -673,12 +1305,13 @@
                         }
                     },
                     "500": {
-                        "description": "Erreur serveur",
+                        "description": "Erreur lors de la récupération des logs",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "error": {
+                                            "description": "Message d'erreur détaillé",
                                             "type": "string"
                                         }
                                     },
@@ -687,7 +1320,411 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/getLogsByUser": {
+            "post": {
+                "tags": [
+                    "Logs"
+                ],
+                "summary": "Récupère les logs d'un utilisateur spécifique",
+                "description": "Cette méthode permet à un administrateur de récupérer les logs d'activité d'un utilisateur spécifique basé sur son email. Elle nécessite que l'utilisateur soit authentifié et possède le rôle d'administrateur.",
+                "operationId": "getLogsByUser",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "L'email de l'utilisateur pour lequel récupérer les logs",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "utilisateur@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Logs récupérés avec succès pour l'utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "user": {
+                                                "description": "Nom de l'utilisateur ayant effectué l'action",
+                                                "type": "string"
+                                            },
+                                            "fonctionnalite": {
+                                                "description": "Nom de la fonctionnalité associée à l'action",
+                                                "type": "string"
+                                            },
+                                            "date_action": {
+                                                "description": "Date et heure de l'action",
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "description_action": {
+                                                "description": "Description de l'action réalisée",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit pour l'utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Vous n'avez pas les droits pour accéder à cette ressource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Utilisateur non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Utilisateur non trouvé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur lors de la récupération des logs",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Message d'erreur détaillé",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/getLogsByFonctionnalite": {
+            "post": {
+                "tags": [
+                    "Logs"
+                ],
+                "summary": "Récupère les derniers logs d'une fonctionnalité spécifique",
+                "description": "Cette méthode permet à un administrateur de récupérer les derniers logs d'une fonctionnalité spécifique, identifiée par son nom. Elle nécessite que l'utilisateur soit authentifié et possède le rôle d'administrateur.",
+                "operationId": "getLogsByFonctionnalite",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nom_fonctionnalite"
+                                ],
+                                "properties": {
+                                    "nom_fonctionnalite": {
+                                        "description": "Le nom de la fonctionnalité pour laquelle récupérer les logs",
+                                        "type": "string",
+                                        "example": "Recherche"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Logs récupérés avec succès pour la fonctionnalité",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "user": {
+                                                "description": "Nom de l'utilisateur ayant effectué l'action",
+                                                "type": "string"
+                                            },
+                                            "fonctionnalite": {
+                                                "description": "Nom de la fonctionnalité associée à l'action",
+                                                "type": "string"
+                                            },
+                                            "date_action": {
+                                                "description": "Date et heure de l'action",
+                                                "type": "string",
+                                                "format": "date-time"
+                                            },
+                                            "description_action": {
+                                                "description": "Description de l'action réalisée",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit pour l'utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Vous n'avez pas les droits pour accéder à cette ressource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Fonctionnalité non trouvée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Fonctionnalité non trouvée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur lors de la récupération des logs",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Message d'erreur détaillé",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/changeRules": {
+            "post": {
+                "tags": [
+                    "Droits"
+                ],
+                "summary": "Ajoute ou modifie les droits d'accès pour une fonctionnalité et un rôle",
+                "description": "Cette méthode permet à un administrateur d'ajouter ou de modifier les droits d'accès pour une fonctionnalité donnée et un rôle spécifique. Si un droit existe déjà, il sera modifié, sinon il sera créé.",
+                "operationId": "changeRules",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fonctionnalite_id",
+                                    "role_id"
+                                ],
+                                "properties": {
+                                    "fonctionnalite_id": {
+                                        "description": "L'ID de la fonctionnalité pour laquelle attribuer ou modifier les droits",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "role_id": {
+                                        "description": "L'ID du rôle pour lequel attribuer ou modifier les droits",
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Droit ajouté ou modifié avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "result": {
+                                            "type": "string",
+                                            "example": "Droit ajouté"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Droit déjà existant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Droit déjà existant"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Utilisateur non authentifié"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit pour l'utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Vous n'avez pas les droits pour accéder à cette ressource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur lors de la modification des droits",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Message d'erreur détaillé",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
             }
         }
     },
@@ -697,8 +1734,16 @@
             "description": "Authentification"
         },
         {
-            "name": "HackController",
-            "description": "HackController"
+            "name": "Hacking",
+            "description": "Hacking"
+        },
+        {
+            "name": "Logs",
+            "description": "Logs"
+        },
+        {
+            "name": "Droits",
+            "description": "Droits"
         }
     ]
 }

