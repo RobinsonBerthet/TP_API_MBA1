@@ -47,6 +47,7 @@ jobs:
         ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST << EOF
           cd /var/www/TP_API_MBA1
           echo "Pulling latest code..."
+          git reset --hard || { echo "Git reset --hard failed"; exit 1; }
           git pull origin main || { echo "Git pull failed"; exit 1; }
           
           echo "Installing composer dependencies..."
