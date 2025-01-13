@@ -23,23 +23,45 @@ jobs:
         REMOTE_HOST: ${{ secrets.VPS_IP }}
         REMOTE_USER: ${{ secrets.VPS_USER }}
       run: |
-        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST "echo 'SSH connection successful'"
+        echo "Testing SSH connection..."
+        if ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST "echo 'SSH connection successful'"; then
+          echo "SSH connection successful"
+        else
+          echo "SSH connection failed"
+          exit 1
+        fi
 
     - name: Deploy to Server
       env:
         REMOTE_HOST: ${{ secrets.VPS_IP }}
         REMOTE_USER: ${{ secrets.VPS_USER }}
       run: |
+        echo "Deploying to server..."
         ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST << EOF
           cd /var/www/TP_API_MBA1
-          git pull origin main
-          composer install --no-dev --optimize-autoloader
-          php artisan migrate --force
-          php artisan cache:clear
-          php artisan config:clear
-          php artisan route:clear
-          php artisan storage:link
-          sudo systemctl reload nginx
+          echo "Pulling latest code..."
+          git pull origin main || { echo "Git pull failed"; exit 1; }
+          
+          echo "Installing composer dependencies..."
+          composer install --no-dev --optimize-autoloader || { echo "Composer install failed"; exit 1; }
+          
+          echo "Running migrations..."
+          php artisan migrate --force || { echo "Migrations failed"; exit 1; }
+
+          echo "Clearing cache..."
+          php artisan cache:clear || { echo "Cache clear failed"; exit 1; }
+
+          echo "Clearing config..."
+          php artisan config:clear || { echo "Config clear failed"; exit 1; }
+
+          echo "Clearing routes..."
+          php artisan route:clear || { echo "Route clear failed"; exit 1; }
+
+          echo "Linking storage..."
+          php artisan storage:link || { echo "Storage link failed"; exit 1; }
+
+          echo "Reloading nginx..."
+          sudo systemctl reload nginx || { echo "Nginx reload failed"; exit 1; }
         EOF
 
     - name: Verify Laravel Worker Status
@@ -47,10 +69,22 @@ jobs:
         REMOTE_HOST: ${{ secrets.VPS_IP }}
         REMOTE_USER: ${{ secrets.VPS_USER }}
       run: |
-        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST "sudo systemctl is-active --quiet laravel-worker && echo 'Laravel worker is active' || echo 'Laravel worker is NOT active'"
+        echo "Verifying Laravel Worker status..."
+        if ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST "sudo systemctl is-active --quiet laravel-worker"; then
+          echo "Laravel worker is active"
+        else
+          echo "Laravel worker is NOT active"
+        fi
 
     - name: Check Application Health
       env:
         APP_URL: ${{ secrets.APP_URL }}
       run: |
-        curl -s -o /dev/null -w "%{http_code}" $APP_URL | grep -q "200" && echo "Application is healthy" || echo "Application is NOT healthy"
+        echo "Checking application health..."
+        response=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL)
+        if [ "$response" -eq 200 ]; then
+          echo "Application is healthy"
+        else
+          echo "Application is NOT healthy (HTTP code: $response)"
+          exit 1
+        fi
