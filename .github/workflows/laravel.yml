@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: debian-latest
+    runs-on: ubuntu-latest  # Essaye ubuntu-latest au lieu de debian-latest
 
     steps:
     - name: Checkout code
@@ -17,6 +17,13 @@ jobs:
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Debugging message - check environment
+      run: |
+        echo "Environment setup:"
+        echo "REMOTE_HOST=${{ secrets.VPS_IP }}"
+        echo "REMOTE_USER=${{ secrets.VPS_USER }}"
+        echo "SSH_PRIVATE_KEY=${{ secrets.SSH_PRIVATE_KEY }}"  # Vérifie que ce secret est bien injecté
 
     - name: Test SSH Connection
       env:
