@@ -1,40 +1,36 @@
-name: Laravel CI/CD
+name: Deploy Laravel API
 
 on:
   push:
     branches:
-      - main  # Branche principale où vous poussez le code
+      - main
 
 jobs:
-  build:
+  deploy:
     runs-on: debian-latest
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
-    - name: Set up PHP
-      uses: shivammathur/setup-php@v2
+    - name: Set up SSH key
+      uses: webfactory/ssh-agent@v0.5.3
       with:
-        php-version: '8.2'  # Choisissez la version de PHP que vous utilisez
-        extensions: mbstring, bcmath, zip  # Liste des extensions PHP requises pour Laravel
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Install dependencies
+    - name: Deploy to Server
+      env:
+        REMOTE_HOST: ${{ secrets.VPS_IP }}
+        REMOTE_USER: ${{ secrets.VPS_USER }}
       run: |
-        composer install --no-dev --optimize-autoloader
-
-
-    - name: Deploy to server
-      run: |
-        ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} robinson@185.98.137.99 << 'EOF'
+        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST << EOF
           cd /var/www/TP_API_MBA1
           git pull origin main
           composer install --no-dev --optimize-autoloader
-          php artisan migrate --force  # Assurez-vous que les migrations sont appliquées
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
-          sudo systemctl restart php-fpm  # Redémarre PHP-FPM pour appliquer les changements
+          php artisan migrate --force
+          php artisan cache:clear
+          php artisan config:clear
+          php artisan route:clear
+          php artisan storage:link
+          sudo systemctl restart laravel-worker
         EOF
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
