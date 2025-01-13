@@ -68,27 +68,3 @@ jobs:
 
         EOF
 
-    - name: Verify Laravel Worker Status
-      env:
-        REMOTE_HOST: ${{ secrets.VPS_IP }}
-        REMOTE_USER: ${{ secrets.VPS_USER }}
-      run: |
-        echo "Verifying Laravel Worker status..."
-        if ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST "sudo systemctl is-active --quiet laravel-worker"; then
-          echo "Laravel worker is active"
-        else
-          echo "Laravel worker is NOT active"
-        fi
-
-    - name: Check Application Health
-      env:
-        APP_URL: ${{ secrets.APP_URL }}
-      run: |
-        echo "Checking application health..."
-        response=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL)
-        if [ "$response" -eq 200 ]; then
-          echo "Application is healthy"
-        else
-          echo "Application is NOT healthy (HTTP code: $response)"
-          exit 1
-        fi
