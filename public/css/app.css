@@ -1,0 +1,28 @@
+
+.txtDoc {
+    color: white; /* Contraste avec le fond noir */
+    text-align: center; 
+    background-color: black;
+    padding: 3%;
+    border-radius: 20px;
+    border: 3px solid red;
+    transition: all 0.3s ease; /* Ajoute une animation pour un effet fluide */
+    text-decoration: none;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.txtDoc:hover {
+    background-color: rgb(255, 0, 0);
+    color: black;
+    border: 0px;
+    transform: scale(1.1); /* Ajoute un effet de zoom */
+}
+
+.titre
+{
+    color: red;
+    font-size: 2em;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    margin-top: 5%;
+}
