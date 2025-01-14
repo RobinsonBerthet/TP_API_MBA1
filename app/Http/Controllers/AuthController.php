@@ -220,6 +220,7 @@ class AuthController extends Controller
      *     summary="Récupération de l'utilisateur authentifié",
      *     operationId="getAuthenticatedUser",
      *     tags={"Authentification"},
+     *    security={{"bearerAuth": {}}},
      *     @OA\Response(
      *         response=200,
      *         description="Utilisateur authentifié",
