@@ -253,21 +253,21 @@ class HackController extends Controller
         }
 
         $mail = new PHPMailer(true);
-        $email = env('EMAIL_ADRESS');
-        $password = env('EMAIL_KEY');
+
+
 
         try {
             // Configuration du serveur SMTP
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';          // Serveur SMTP Gmail
             $mail->SMTPAuth   = true;
-            $mail->Username   = $email;   // Ton adresse Gmail
-            $mail->Password   = $password;        // Ton mot de passe ou App Password
+            $mail->Username   = env('EMAIL_ADDRESS');   // Ton adresse Gmail
+            $mail->Password   = env('EMAIL_KEY');        // Ton mot de passe ou App Password
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;                       // Port TLS pour Gmail
 
             // Destinataires
-            $mail->setFrom($email, 'hack');  // Adresse email et nom de l'expéditeur
+            $mail->setFrom(env('EMAIL_ADDRESS'), 'hack');  // Adresse email et nom de l'expéditeur
             $mail->addAddress($request->destinataire);                    // Ajouter un destinataire
 
             // Contenu de l'email
