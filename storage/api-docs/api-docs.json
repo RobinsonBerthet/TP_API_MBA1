@@ -1451,23 +1451,23 @@
                 ]
             }
         },
-        "/api/logs/fonctionnalite/{nom_fonctionnalite}": {
+        "/api/logs/fonctionnalite/{fonctionnalite_id}": {
             "get": {
                 "tags": [
                     "Logs"
                 ],
                 "summary": "Récupère les derniers logs d'une fonctionnalité spécifique",
-                "description": "Cette méthode permet à un administrateur de récupérer les derniers logs d'une fonctionnalité spécifique, identifiée par son nom. Elle nécessite que l'utilisateur soit authentifié et possède le rôle d'administrateur.",
+                "description": "Cette méthode permet à un administrateur de récupérer les derniers logs d'une fonctionnalité spécifique, identifiée par son ID. Elle nécessite que l'utilisateur soit authentifié et possède le rôle d'administrateur.",
                 "operationId": "getLogsByFonctionnalite",
                 "parameters": [
                     {
-                        "name": "nom_fonctionnalite",
+                        "name": "fonctionnalite_id",
                         "in": "path",
-                        "description": "Le nom de la fonctionnalité pour laquelle récupérer les logs",
+                        "description": "L'ID de la fonctionnalité pour laquelle récupérer les logs",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "example": "Recherche"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
