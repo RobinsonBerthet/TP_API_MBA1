@@ -20,22 +20,25 @@ class HackController extends Controller
 
     function checkRules($fonctionnalite_id, $current_role_id)
     {
-        //verifier que l'utilisateur a le droit d'acceder à la fonctionnalité
+        // Vérifier que l'utilisateur a le droit d'accéder à la fonctionnalité
         try {
             $droit = Droit::where('fonctionnalite_id', $fonctionnalite_id)->first();
             if (!$droit) {
-                return true;
+                return true; // Si le droit n'existe pas, retourner false
             } else {
-                if ($droit->role_id == $current_role_id) {
+                if($current_role_id == 1){
                     return true;
-                } else if ($droit->role_id < $current_role_id) {
-                    return false;
+                }
+                else
+                {
+                    return $droit->role_id == $current_role_id;
                 }
             }
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erreur lors de la vérification des droits ' . $e], 500);
         }
     }
+    
 
     /**
      * @OA\Get(

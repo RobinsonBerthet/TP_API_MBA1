@@ -23,7 +23,7 @@ class LogsController extends Controller
      *         name="nbLogs",
      *         in="query",
      *         description="Le nombre de derniers logs à récupérer",
-     *         required=true,
+     *         required=false, 
      *         @OA\Schema(
      *             type="integer",
      *             example=10

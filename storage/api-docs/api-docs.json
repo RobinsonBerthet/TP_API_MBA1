@@ -202,7 +202,7 @@
                                         },
                                         "statut": {
                                             "type": "string",
-                                            "example": "actif"
+                                            "example": "admin"
                                         },
                                         "date_creation": {
                                             "type": "string",
@@ -1229,7 +1229,7 @@
                         "name": "nbLogs",
                         "in": "query",
                         "description": "Le nombre de derniers logs à récupérer",
-                        "required": true,
+                        "required": false,
                         "schema": {
                             "type": "integer",
                             "example": 10

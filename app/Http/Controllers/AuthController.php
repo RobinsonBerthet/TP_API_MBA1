@@ -227,7 +227,7 @@ class AuthController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="email", type="string", example="john.doe@example.com"),
      *             @OA\Property(property="nom", type="string", example="John Doe"),
-     *             @OA\Property(property="statut", type="string", example="actif"),
+     *             @OA\Property(property="statut", type="string", example="admin"),
      *             @OA\Property(property="date_creation", type="string", format="date-time", example="2024-10-26T12:30:00Z")
      *         )
      *     ),
@@ -261,7 +261,7 @@ class AuthController extends Controller
             return response()->json([
                 'email' => $user->email,
                 'nom' => $user->nom,
-                'statut' => $user->statut,
+                'statut' => $user->role_id == 1 ? 'admin' : 'utilisateur',
                 'date_creation' => $user->dateCreation
             ]);
         } catch (\Exception $e) {
