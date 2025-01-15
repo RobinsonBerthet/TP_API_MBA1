@@ -112,7 +112,7 @@
                                     "email": {
                                         "type": "string",
                                         "format": "email",
-                                        "example": "haitam.elq@gmail.com"
+                                        "example": "robinson.berthet@gmail.com"
                                     },
                                     "password": {
                                         "type": "string",

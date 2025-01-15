@@ -51,65 +51,65 @@ class AuthController extends Controller
      */
 
     // Inscription de l'utilisateur
-        // Inscription de l'utilisateur
-        public function register(Request $request)
-        {
-            // Valider les données d'inscription
-            $validator = Validator::make($request->all(), [
-                'name' => 'required',
-                'email' => 'required|email|unique:utilisateurs,email', // Vérification unique sur la table 'utilisateurs'
-                'password' => 'required|min:8|confirmed', 
+
+    public function register(Request $request)
+    {
+        // Valider les données d'inscription
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:utilisateurs,email', // Vérification unique sur la table 'utilisateurs'
+            'password' => 'required|min:8|confirmed', 
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->toJson(), 400);
+        }
+
+        // Récupérer les données validées
+        $validatedData = $validator->validated();
+
+
+
+        // Créer un nouvel utilisateur
+        try {
+            $user = Utilisateur::create([
+                'nom' => $validatedData['name'],  // Champ 'nom' dans la table
+                'email' => $validatedData['email'],
+                'motDePasse' => Hash::make($validatedData['password']), // Champ 'motDePasse' dans la table
+                'role_id' => 2,  // ID du rôle (1 = admin)
             ]);
-      
-            if ($validator->fails()) {
-                return response()->json($validator->errors()->toJson(), 400);
-            }
-    
-            // Récupérer les données validées
-            $validatedData = $validator->validated();
 
 
-    
-            // Créer un nouvel utilisateur
+            // Générer un token JWT
             try {
-                $user = Utilisateur::create([
-                    'nom' => $validatedData['name'],  // Champ 'nom' dans la table
-                    'email' => $validatedData['email'],
-                    'motDePasse' => Hash::make($validatedData['password']), // Champ 'motDePasse' dans la table
-                    'role_id' => 2,  // ID du rôle (1 = admin)
+                // Générer un token JWT
+                $token = Auth::guard('api')->login($user);
+                Log::create([
+                    'utilisateur_id'=> $user->id,
+                    'fonctionnalite_id'=> 1,
+                    'description_action'=> "Inscription Réussie",
+
                 ]);
 
-    
-                // Générer un token JWT
-                try {
-                    // Générer un token JWT
-                    $token = Auth::guard('api')->login($user);
-                    Log::create([
-                        'utilisateur_id'=> $user->id,
-                        'fonctionnalite_id'=> 1,
-                        'description_action'=> "Inscription Réussie",
-
-                    ]);
-
-                } catch (\Exception $e) {
-                    return response()->json(['error' => 'Erreur lors de la génération du token JWT: ' . $e->getMessage()], 500);
-                }
-                
-    
-                // Retourner une réponse avec succès
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'User created successfully',
-                    'user' => $user,
-                    'authorisation' => [
-                        'token' => $token,
-                        'type' => 'bearer',
-                    ]
-                ], 201);
             } catch (\Exception $e) {
-                return response()->json(['error' => 'Erreur lors de la création de l\'utilisateur: ' . $e->getMessage()], 500);
+                return response()->json(['error' => 'Erreur lors de la génération du token JWT: ' . $e->getMessage()], 500);
             }
+            
+
+            // Retourner une réponse avec succès
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User created successfully',
+                'user' => $user,
+                'authorisation' => [
+                    'token' => $token,
+                    'type' => 'bearer',
+                ]
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erreur lors de la création de l\'utilisateur: ' . $e->getMessage()], 500);
         }
+    }
     
 
     /**
@@ -122,7 +122,7 @@ class AuthController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"email", "password"},
-     *             @OA\Property(property="email", type="string", format="email", example="haitam.elq@gmail.com"),
+     *             @OA\Property(property="email", type="string", format="email", example="robinson.berthet@gmail.com"),
      *             @OA\Property(property="password", type="string", format="password", example="12345678")
      *         )
      *     ),

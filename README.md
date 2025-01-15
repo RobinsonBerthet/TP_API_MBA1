@@ -36,6 +36,14 @@ Voici une liste des fonctionnalités disponibles dans l'API (ce tableau est util
 | 14  | Crawler d'Information                | Récupère des informations sur une personne donnée.                                                                                                                                                                           |
 | 15  | Générateur d'une Personne Aléatoire  | Génère une image d'une personne qui n'existe pas (IA).                                                                                                                                                                       |
 
+## Consulter les logs ou modifier les droits
+
+Pour consulter les logs ou modifier les droits pour les méthodes de hacking il faut être administrateur
+
+il existe un seul admin sur l'API :
+login: leo.messi@gmail.com 
+password : abcd1234
+
 ## Tester l'API avec Postman
 
 Pour tester l'API dans Postman, importez la collection qui se trouve à la racine du projet :
