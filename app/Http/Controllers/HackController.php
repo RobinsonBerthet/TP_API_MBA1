@@ -39,7 +39,7 @@ class HackController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/emailChecker/{email}",
+     *     path="/api/emails/emailChecker/{email}",
      *     summary="Vérifie un email avec l'API Hunter.io",
      *     description="Cette méthode vérifie si un email est valide et retourne un score de validité en utilisant l'API Hunter.io.",
      *     operationId="emailChecker",
@@ -173,7 +173,7 @@ class HackController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/spam",
+     *     path="/api/emails/spam",
      *     summary="Envoie un ou plusieurs emails",
      *     description="Cette méthode permet d'envoyer des emails en utilisant le service SMTP Gmail. Elle nécessite que l'utilisateur soit authentifié et dispose des permissions nécessaires.",
      *     operationId="envoyerEmail",
@@ -296,7 +296,7 @@ class HackController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/check-password",
+     *     path="/api/passwords/check",
      *     summary="Vérifie si un mot de passe est commun",
      *     description="Cette méthode permet de vérifier si le mot de passe fourni existe dans une liste de mots de passe courants.",
      *     tags={"Hacking"},
@@ -369,7 +369,7 @@ class HackController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/passwordGenerator",
+     *     path="/api/passwords/generate",
      *     summary="Génère un mot de passe aléatoire sécurisé",
      *     description="Cette méthode génère un mot de passe aléatoire sécurisé de 16 caractères, comprenant des lettres, chiffres et symboles spéciaux. Elle nécessite une authentification et une autorisation.",
      *     operationId="generatePassword",
@@ -441,7 +441,7 @@ class HackController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/subdomains/{domain}",
+     *     path="/api/domains/{domain}",
      *     summary="Récupère les sous-domaines d'un domaine",
      *     description="Cette méthode permet de récupérer la liste des sous-domaines d'un domaine spécifié. L'utilisateur doit être authentifié et autorisé.",
      *     operationId="getSubdomains",
@@ -551,7 +551,7 @@ class HackController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/ddos",
+     *     path="/api/attack/ddos",
      *     summary="Effectue une attaque DDoS simulée",
      *     description="Cette méthode permet de simuler une attaque DDoS en envoyant un nombre défini de requêtes HTTP à une URL spécifiée. L'utilisateur doit être authentifié et autorisé à effectuer cette action.",
      *     operationId="ddos",
@@ -667,7 +667,7 @@ class HackController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/generate-identity",
+     *     path="/api/identities/generate",
      *     summary="Génère une identité fictive aléatoire",
      *     description="Cette méthode génère une identité fictive aléatoire incluant un nom, un email, une adresse et un numéro de téléphone. L'utilisateur doit être authentifié et autorisé à effectuer cette action.",
      *     operationId="generateIdentity",
@@ -750,7 +750,7 @@ class HackController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/phishing",
+     *     path="/api/phishing/page",
      *     summary="Effectue une attaque de type phishing sur un site",
      *     description="Cette méthode permet de récupérer le contenu HTML d'un site donné, d'y injecter un script de phishing et de le renvoyer modifié. L'utilisateur doit être authentifié et autorisé à effectuer cette action.",
      *     operationId="phishing",
@@ -950,7 +950,7 @@ class HackController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/getRandomPerson",
+     *     path="/api/images/random",
      *     summary="Génère une image d'une personne aléatoire",
      *     description="Cette méthode génère une image d'une personne aléatoire en récupérant une photo depuis le site https://thispersondoesnotexist.com. Elle nécessite une authentification et une autorisation.",
      *     operationId="getRandomPerson",
@@ -1021,7 +1021,7 @@ class HackController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/crawlerInformation",
+     *     path="/api/identity/crawl",
      *     summary="Récupère des informations via un moteur de recherche externe",
      *     description="Cette méthode effectue une recherche via l'API SerpApi, et récupère des informations basées sur la requête fournie. Elle nécessite une authentification et une autorisation appropriée.",
      *     operationId="crawlerInformation",

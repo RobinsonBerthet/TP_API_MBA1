@@ -6,7 +6,7 @@
         "version": "1.0"
     },
     "paths": {
-        "/api/register": {
+        "/api/auth/register": {
             "post": {
                 "tags": [
                     "Authentification"
@@ -92,7 +92,7 @@
                 }
             }
         },
-        "/api/login": {
+        "/api/auth/login": {
             "post": {
                 "tags": [
                     "Authentification"
@@ -148,7 +148,7 @@
                 }
             }
         },
-        "/api/logout": {
+        "/api/auth/logout": {
             "post": {
                 "tags": [
                     "Authentification"
@@ -178,7 +178,7 @@
                 }
             }
         },
-        "/api/me": {
+        "/api/user/me": {
             "get": {
                 "tags": [
                     "Authentification"
@@ -218,10 +218,15 @@
                     "401": {
                         "description": "Utilisateur non authentifié"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/api/emailChecker/{email}": {
+        "/api/emails/emailChecker/{email}": {
             "get": {
                 "tags": [
                     "Hacking"
@@ -338,7 +343,7 @@
                 ]
             }
         },
-        "/api/spam": {
+        "/api/emails/spam": {
             "post": {
                 "tags": [
                     "Hacking"
@@ -466,14 +471,14 @@
                 ]
             }
         },
-        "/api/check-password": {
+        "/api/passwords/check": {
             "post": {
                 "tags": [
                     "Hacking"
                 ],
                 "summary": "Vérifie si un mot de passe est commun",
                 "description": "Cette méthode permet de vérifier si le mot de passe fourni existe dans une liste de mots de passe courants.",
-                "operationId": "410b669147a39d56e2f1905ba7049463",
+                "operationId": "854e4b3b0309936b49bbda254ca6a060",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -521,7 +526,7 @@
                 ]
             }
         },
-        "/api/passwordGenerator": {
+        "/api/passwords/generate": {
             "get": {
                 "tags": [
                     "Hacking"
@@ -602,7 +607,7 @@
                 ]
             }
         },
-        "/api/subdomains/{domain}": {
+        "/api/domains/{domain}": {
             "get": {
                 "tags": [
                     "Hacking"
@@ -715,7 +720,7 @@
                 ]
             }
         },
-        "/api/ddos": {
+        "/api/attack/ddos": {
             "post": {
                 "tags": [
                     "Hacking"
@@ -850,7 +855,7 @@
                 ]
             }
         },
-        "/api/generate-identity": {
+        "/api/identities/generate": {
             "get": {
                 "tags": [
                     "Hacking"
@@ -943,7 +948,7 @@
                 ]
             }
         },
-        "/api/phishing": {
+        "/api/phishing/page": {
             "post": {
                 "tags": [
                     "Hacking"
@@ -1040,7 +1045,7 @@
                 ]
             }
         },
-        "/api/getRandomPerson": {
+        "/api/images/random": {
             "get": {
                 "tags": [
                     "Hacking"
@@ -1111,7 +1116,7 @@
                 ]
             }
         },
-        "/api/crawlerInformation": {
+        "/api/identity/crawl": {
             "post": {
                 "tags": [
                     "Hacking"
@@ -1211,34 +1216,26 @@
                 ]
             }
         },
-        "/api/getLastLogs": {
-            "post": {
+        "/api/logs/last": {
+            "get": {
                 "tags": [
                     "Logs"
                 ],
                 "summary": "Récupère les derniers logs d'activité",
                 "description": "Cette méthode permet à un administrateur de récupérer les derniers logs d'activité, triés par date. Elle nécessite que l'utilisateur soit authentifié et possède le rôle d'administrateur.",
                 "operationId": "getLastLogs",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "nbLogs"
-                                ],
-                                "properties": {
-                                    "nbLogs": {
-                                        "description": "Le nombre de derniers logs à récupérer",
-                                        "type": "integer",
-                                        "example": 10
-                                    }
-                                },
-                                "type": "object"
-                            }
+                "parameters": [
+                    {
+                        "name": "nbLogs",
+                        "in": "query",
+                        "description": "Le nombre de derniers logs à récupérer",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
                         }
                     }
-                },
+                ],
                 "responses": {
                     "200": {
                         "description": "Les derniers logs récupérés avec succès",
@@ -1328,35 +1325,27 @@
                 ]
             }
         },
-        "/api/getLogsByUser": {
-            "post": {
+        "/api/logs/user/{email}": {
+            "get": {
                 "tags": [
                     "Logs"
                 ],
                 "summary": "Récupère les logs d'un utilisateur spécifique",
                 "description": "Cette méthode permet à un administrateur de récupérer les logs d'activité d'un utilisateur spécifique basé sur son email. Elle nécessite que l'utilisateur soit authentifié et possède le rôle d'administrateur.",
                 "operationId": "getLogsByUser",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "description": "L'email de l'utilisateur pour lequel récupérer les logs",
-                                        "type": "string",
-                                        "format": "email",
-                                        "example": "utilisateur@example.com"
-                                    }
-                                },
-                                "type": "object"
-                            }
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "path",
+                        "description": "L'email de l'utilisateur pour lequel récupérer les logs",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "email",
+                            "example": "utilisateur@example.com"
                         }
                     }
-                },
+                ],
                 "responses": {
                     "200": {
                         "description": "Logs récupérés avec succès pour l'utilisateur",
@@ -1462,34 +1451,26 @@
                 ]
             }
         },
-        "/api/getLogsByFonctionnalite": {
-            "post": {
+        "/api/logs/fonctionnalite/{nom_fonctionnalite}": {
+            "get": {
                 "tags": [
                     "Logs"
                 ],
                 "summary": "Récupère les derniers logs d'une fonctionnalité spécifique",
                 "description": "Cette méthode permet à un administrateur de récupérer les derniers logs d'une fonctionnalité spécifique, identifiée par son nom. Elle nécessite que l'utilisateur soit authentifié et possède le rôle d'administrateur.",
                 "operationId": "getLogsByFonctionnalite",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "nom_fonctionnalite"
-                                ],
-                                "properties": {
-                                    "nom_fonctionnalite": {
-                                        "description": "Le nom de la fonctionnalité pour laquelle récupérer les logs",
-                                        "type": "string",
-                                        "example": "Recherche"
-                                    }
-                                },
-                                "type": "object"
-                            }
+                "parameters": [
+                    {
+                        "name": "nom_fonctionnalite",
+                        "in": "path",
+                        "description": "Le nom de la fonctionnalité pour laquelle récupérer les logs",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Recherche"
                         }
                     }
-                },
+                ],
                 "responses": {
                     "200": {
                         "description": "Logs récupérés avec succès pour la fonctionnalité",
@@ -1595,8 +1576,8 @@
                 ]
             }
         },
-        "/api/changeRules": {
-            "post": {
+        "/api/rules": {
+            "put": {
                 "tags": [
                     "Droits"
                 ],
