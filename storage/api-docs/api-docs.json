@@ -375,7 +375,8 @@
                                     },
                                     "message": {
                                         "description": "Contenu de l'email",
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "get hacked ez"
                                     },
                                     "nombreEmail": {
                                         "description": "Nombre d'emails à envoyer",

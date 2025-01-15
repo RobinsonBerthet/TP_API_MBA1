@@ -49,3 +49,26 @@ password : abcd1234
 Pour tester l'API dans Postman, importez la collection qui se trouve à la racine du projet :
 
 `/API-HackR.postman_collection.json`
+
+
+## tester en local
+
+avoir php et composer d'installé sur sa machine et avoir à disposition une base de données 
+
+git clone https://github.com/RobinsonBerthet/TP_API_MBA1.git
+
+cd TP_API_MBA1
+
+cp .env.example .env
+
+
+composer install
+
+
+créer une base de données nommée hackr : 
+CREATE DATABASE hackr;
+
+php artisan key:generate
+
+php artisan migrate
+

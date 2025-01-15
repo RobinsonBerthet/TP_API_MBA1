@@ -190,7 +190,7 @@ class HackController extends Controller
      *             required={"destinataire", "objet", "message", "nombreEmail"},
      *             @OA\Property(property="destinataire", type="string", format="email", description="Adresse email du destinataire"),
      *             @OA\Property(property="objet", type="string", description="Sujet de l'email"),
-     *             @OA\Property(property="message", type="string", description="Contenu de l'email"),
+     *             @OA\Property(property="message", type="string", description="Contenu de l'email", example="get hacked ez"),
      *             @OA\Property(property="nombreEmail", type="integer", description="Nombre d'emails à envoyer")
      *         )
      *     ),
@@ -289,7 +289,8 @@ class HackController extends Controller
                 'description_action' => "envoi de " . $request->nombreEmail . " email(s) à " . $request->destinataire  // Description de l'action
             ]);
 
-            return true;
+            return response()->json(['result' => true], 200);
+
         } catch (Exception $e) {
             // En cas d'erreur
             echo "L'email n'a pas pu être envoyé. Erreur: {$mail->ErrorInfo}";
