@@ -34,5 +34,7 @@ RUN mkdir -p /var/www/html/storage/logs \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod 664 /var/www/html/storage/logs/laravel.log
 
+RUN usermod -u 1000 www-data
+
 # Exposer le port utilisé par PHP-FPM
 EXPOSE 8080
