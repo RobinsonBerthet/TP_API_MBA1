@@ -79,3 +79,4 @@ Avant de commencer à utiliser l'API, assurez-vous que les conditions suivantes 
 
 6. Si vous testez le projet localement, lancez le serveur avec la commande suivante :
     `php artisan serve`
+
